@@ -10,32 +10,33 @@
         /* Base styles for the entire page */
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif; /* Using Inter font as per guidelines */
-            background-color: #f0f0f0; /* Light grey background */
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f0f0;
             display: flex;
-            justify-content: center; /* Center content horizontally */
-            align-items: center; /* Center content vertically */
-            min-height: 100vh; /* Full viewport height */
-            padding: 20px; /* Padding around the main container */
-            box-sizing: border-box; /* Include padding in element's total width and height */
-            position: relative; /* Needed for positioning global navigation arrows */
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Use exact viewport height */
+            overflow: hidden; /* Prevent scrolling */
+            box-sizing: border-box;
+            position: relative;
         }
 
         /* Main container for the PDF viewer */
         .pdf-viewer-container {
             width: 100%;
-            /* Reduced by 5% from 1240px */
-            max-width: calc(1240px * 0.95);
+            /* Reduced by 30% from 1240px for better fit */
+            max-width: calc(1240px * 0.70);
             background-color: #f0f0f0; /* Matches body background color */
             border-radius: 12px; /* Rounded corners for the container */
             display: flex;
             flex-direction: column; /* Stack elements vertically */
             align-items: center; /* Center items horizontally within the container */
-            padding: 20px; /* Inner padding */
-            padding-bottom: 40px; /* Increased bottom padding to make space for absolutely positioned pagination */
+            padding: 32px; /* Increased inner padding */
+            padding-bottom: 40px; /* Increased bottom padding to make space for pagination */
             box-sizing: border-box;
             position: relative; /* For positioning pagination */
             border: 1px solid #ddd; /* 1px border as requested */
+            margin: 20px; /* Add margin to ensure some space from viewport edges */
         }
 
         /* Wrapper for the PDF pages to allow flexible arrangement */
@@ -45,37 +46,31 @@
             width: 100%;
             justify-content: center;
             align-items: center;
-            gap: 20px; /* Space between pages if multiple are shown */
+            gap: 0; /* Remove space between pages */
         }
 
         /* Individual PDF page styling */
         .pdf-page {
             display: flex;
-            flex-direction: column; /* Default to column for smaller screens */
-            background-color: #fff;
+            flex-direction: row; /* Always show pages side by side */
             width: 100%;
-            /* Reduced by 5% from 1200px */
-            max-width: calc(1200px * 0.95);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Lighter shadow for individual pages */
-            border-radius: 8px; /* Rounded corners for pages */
+            /* Reduced by 15% from 1200px */
+            max-width: calc(1200px * 0.85);
             overflow: hidden; /* Ensures content stays within bounds */
             box-sizing: border-box;
+            justify-content: center; /* Center the pages horizontally */
         }
 
         /* PDF content panels */
         .left-content-panel,
         .right-content-panel {
-            width: 100%; /* Full width on small screens */
-            /* Reduced by 5% from 595px */
-            max-width: calc(595px * 0.95);
-            /* Calculate height based on 1:1.414 ratio (width:height) */
-            height: calc(calc(595px * 0.95) * 1.414);
+            width: calc(595px * 0.70); /* Further reduced width */
+            height: calc((595px * 0.70) * 1.414); /* Maintain A4 ratio with reduced size */
             display: flex;
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
             overflow: hidden; /* Prevent overflow */
-            background-color: #fff;
             position: relative;
         }
 
@@ -87,7 +82,7 @@
             left: 0;
             width: 100% !important;
             height: 100% !important;
-            object-fit: contain;
+            display: block; /* Remove any default spacing */
         }
 
         /* Pagination text */
@@ -109,43 +104,36 @@
 
         /* Navigation arrows */
         .nav-arrow {
-            position: absolute; /* Position relative to the body */
+            position: fixed; /* Change to fixed position */
             top: 50%;
             transform: translateY(-50%);
             width: 50px;
             height: 50px;
-            background-color: #FFFFFF; /* White background */
-            color: #424242; /* Dark grey icon color */
+            background-color: #F0F0F0;
+            border: 1px solid #ddd;
+            border-radius: 50%;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             cursor: pointer;
-            font-size: 2em;
-            border-radius: 50%; /* Circular shape */
-            z-index: 10; /* Ensure arrows are above content */
-            transition: background-color 0.3s ease, border-color 0.3s ease; /* Smooth transition on hover */
-            border: 1px solid #D3D3D3; /* Light grey border */
+            transition: all 0.3s ease;
+            z-index: 10;
         }
 
-        .nav-arrow:hover {
-            background-color: #EAEAEA; /* Light grey on hover */
-            border-color: #B0B0B0; /* Slightly darker border on hover */
+        .nav-arrow:hover,
+        .nav-arrow:active {
+            background-color: #81EDFF;
+            transform: translateY(-50%) scale(1.05);
         }
 
         .nav-arrow.left {
-            /* Position the left arrow so its left edge aligns with the inner padding of the main div. */
-            /* Main div's left edge is at 50% - (half_main_div_width).
-               Inner padding starts at +20px from that.
-               So, left edge of button should be at (50% - half_main_div_width + 20px). */
-            left: calc(50% - (calc(1240px * 0.95) / 2) + 20px);
+            /* Position slightly outside the main div on the left */
+            left: calc(50% - (calc(1240px * 0.70) / 2) - 12px);
         }
 
         .nav-arrow.right {
-            /* Position the right arrow so its right edge aligns with the inner padding of the main div. */
-            /* Main div's right edge is at 50% + (half_main_div_width).
-               Inner padding ends at -20px from that.
-               So, right edge of button should be at (50% + half_main_div_width - 20px). */
-            right: calc(50% - (calc(1240px * 0.95) / 2) + 20px);
+            /* Position slightly outside the main div on the right */
+            right: calc(50% - (calc(1240px * 0.70) / 2) - 12px);
         }
 
         /* Material Symbols specific styling */
@@ -242,14 +230,21 @@
 
             // Load the PDF
             try {
-                pdfDoc = await pdfjsLib.getDocument(pdfPath).promise;
+                // Add CORS handling
+                const loadingTask = pdfjsLib.getDocument({
+                    url: pdfPath,
+                    withCredentials: true,
+                    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/cmaps/',
+                    cMapPacked: true
+                });
+                pdfDoc = await loadingTask.promise;
                 totalPages = pdfDoc.numPages;
                 updatePagination();
                 await renderPages(currentPage);
             } catch (error) {
-                console.error('Error loading PDF:', error);
-                leftPanel.textContent = 'Error loading PDF';
-                rightPanel.textContent = 'Error loading PDF';
+                const errorMessage = error.message || 'Error loading PDF';
+                leftPanel.innerHTML = `<div style="padding: 20px; text-align: center; color: #dc3545;"><div style="font-size: 48px; margin-bottom: 10px;">⚠️</div><div>${errorMessage}</div><div style="margin-top: 10px; font-size: 0.9em; color: #666;">Please make sure the PDF file exists and try again.</div></div>`;
+                rightPanel.innerHTML = leftPanel.innerHTML;
             }
 
             // Add navigation event listeners
@@ -271,6 +266,7 @@
 
             // Function to render PDF pages
             async function renderPages(startPage) {
+                const isMobile = window.innerWidth <= 767;
                 try {
                     // Render left page
                     const leftPageNum = startPage;
@@ -302,9 +298,9 @@
                         }).promise;
                     }
 
-                    // Render right page
+                    // Render right page (only on desktop/tablet)
                     const rightPageNum = startPage + 1;
-                    if (rightPageNum <= totalPages) {
+                    if (!isMobile && rightPageNum <= totalPages) {
                         const rightPage = await pdfDoc.getPage(rightPageNum);
                         const rightCanvas = document.createElement('canvas');
                         const rightContext = rightCanvas.getContext('2d');
@@ -340,8 +336,9 @@
 
             // Function to update pagination text
             function updatePagination() {
-                const endPage = Math.min(currentPage + 1, totalPages);
-                pagination.textContent = `${currentPage} - ${endPage} of ${totalPages}`;
+                const isMobile = window.innerWidth <= 767;
+                const endPage = isMobile ? currentPage : Math.min(currentPage + 1, totalPages);
+                pagination.textContent = `${currentPage}${isMobile ? '' : ` - ${endPage}`} of ${totalPages}`;
                 
                 // Update arrow visibility
                 leftArrow.style.visibility = currentPage <= 2 ? 'hidden' : 'visible';
