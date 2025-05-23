@@ -59,6 +59,8 @@
             overflow: hidden; /* Ensures content stays within bounds */
             box-sizing: border-box;
             justify-content: center; /* Center the pages horizontally */
+            align-items: center;
+            position: relative;
         }
 
         /* PDF content panels */
@@ -210,6 +212,16 @@
     <script>
         // Configure PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+
+        // Handle window resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(async () => {
+                await renderPages(currentPage);
+                updatePagination();
+            }, 250);
+        });
 
         document.addEventListener('DOMContentLoaded', async () => {
             // Get PDF path from URL parameters
