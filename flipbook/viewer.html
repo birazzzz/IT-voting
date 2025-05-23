@@ -160,23 +160,43 @@
         /* For screens smaller than 768px (mobile devices) */
         @media (max-width: 767px) {
             .pdf-viewer-container {
-                padding: 10px; /* Less padding on small screens */
-                padding-bottom: 30px; /* Adjust padding for pagination on small screens */
+                padding: 10px;
+                padding-bottom: 30px;
+                max-width: calc(1240px * 0.60);
             }
 
-            .pdf-page {
-                height: auto; /* Allow height to adjust to content */
-                border-radius: 8px; /* Maintain rounded corners */
+            /* Show only one panel at a time on mobile */
+            .right-content-panel {
+                display: none;
             }
 
-            .left-content-panel, .right-content-panel {
-                max-width: 100%; /* Take full width */
-                height: auto; /* Allow height to adjust to content */
-                border-radius: 0; /* Remove individual panel rounded corners if stacked */
+            /* Adjust panel size for mobile */
+            .left-content-panel {
+                width: calc(595px * 0.60);
+                height: calc((595px * 0.60) * 1.414);
             }
 
+            /* Keep navigation arrows visible but reposition them */
             .nav-arrow {
-                display: none; /* Hide navigation arrows on small screens */
+                width: 40px;
+                height: 40px;
+            }
+
+            .nav-arrow.left {
+                left: 12px;
+            }
+
+            .nav-arrow.right {
+                right: 12px;
+            }
+
+            /* Center the single page */
+            .pdf-page {
+                justify-content: center;
+            }
+
+            .pagination {
+                font-size: 0.9em;
             }
         }
     </style>
@@ -261,24 +281,45 @@
 
             // Add navigation event listeners
             leftArrow.addEventListener('click', async () => {
-                if (currentPage > 2) {
-                    currentPage -= 2;
-                    await renderPages(currentPage);
-                    updatePagination();
+                const isMobile = window.innerWidth <= 767;
+                if (isMobile) {
+                    if (currentPage > 1) {
+                        currentPage -= 1;
+                        await renderPages(currentPage);
+                        updatePagination();
+                    }
+                } else {
+                    if (currentPage > 2) {
+                        currentPage -= 2;
+                        await renderPages(currentPage);
+                        updatePagination();
+                    }
                 }
             });
 
             rightArrow.addEventListener('click', async () => {
-                if (currentPage + 2 <= totalPages) {
-                    currentPage += 2;
-                    await renderPages(currentPage);
-                    updatePagination();
+                const isMobile = window.innerWidth <= 767;
+                if (isMobile) {
+                    if (currentPage < totalPages) {
+                        currentPage += 1;
+                        await renderPages(currentPage);
+                        updatePagination();
+                    }
+                } else {
+                    if (currentPage + 2 <= totalPages) {
+                        currentPage += 2;
+                        await renderPages(currentPage);
+                        updatePagination();
+                    }
                 }
             });
 
             // Function to render PDF pages
             async function renderPages(startPage) {
                 const isMobile = window.innerWidth <= 767;
+                // Clear both panels first
+                leftPanel.innerHTML = '';
+                rightPanel.innerHTML = '';
                 try {
                     // Render left page
                     const leftPageNum = startPage;
@@ -349,8 +390,16 @@
             // Function to update pagination text
             function updatePagination() {
                 const isMobile = window.innerWidth <= 767;
-                const endPage = isMobile ? currentPage : Math.min(currentPage + 1, totalPages);
-                pagination.textContent = `${currentPage}${isMobile ? '' : ` - ${endPage}`} of ${totalPages}`;
+                if (isMobile) {
+                    pagination.textContent = `Page ${currentPage} of ${totalPages}`;
+                    leftArrow.style.visibility = currentPage > 1 ? 'visible' : 'hidden';
+                    rightArrow.style.visibility = currentPage < totalPages ? 'visible' : 'hidden';
+                } else {
+                    const endPage = Math.min(currentPage + 1, totalPages);
+                    pagination.textContent = `${currentPage} - ${endPage} of ${totalPages}`;
+                    leftArrow.style.visibility = currentPage <= 2 ? 'hidden' : 'visible';
+                    rightArrow.style.visibility = currentPage + 2 > totalPages ? 'hidden' : 'visible';
+                }
                 
                 // Update arrow visibility
                 leftArrow.style.visibility = currentPage <= 2 ? 'hidden' : 'visible';
