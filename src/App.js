@@ -167,7 +167,7 @@ const FlipBookOuter = styled.div`
   justify-content: center;
   margin: 0;
   width: 100vw;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 80px);
   position: relative;
   perspective: 2000px;
   overflow: visible;
@@ -185,12 +185,12 @@ const FlipBookCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 850px;
-  max-width: 90vw;
+  width: 1075px;
+  max-width: 99vw;
   overflow: visible;
   margin: auto;
   position: absolute;
-  top: 50%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
   transform-style: preserve-3d;
@@ -898,6 +898,115 @@ function PDFViewer() {
   const isPrevDisabled = currentPage === 1;
   const isNextDisabled = currentPage + 1 >= numPages;
 
+  const renderPages = () => {
+    if (pageImages.length === 0) return null;
+
+    const pages = [];
+    for (let i = 0; i < pageImages.length; i++) {
+      if (i === 0) {
+        // First page
+        pages.push(
+          <div key={i} style={{ 
+            width: '100%', 
+            height: '100%', 
+            background: 'transparent', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: 0, 
+            margin: 0, 
+            borderRadius: 0,
+            transformStyle: 'preserve-3d',
+            backfaceVisibility: 'hidden'
+          }}>
+            <img 
+              src={pageImages[i]} 
+              alt={`Page ${i + 1}`} 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'contain', 
+                display: 'block', 
+                margin: 0, 
+                padding: 0, 
+                borderRadius: 0,
+                boxShadow: '0 0 20px rgba(0,0,0,0.2)',
+                transform: 'translateZ(0)'
+              }} 
+            />
+          </div>
+        );
+      } else if (i === pageImages.length - 1) {
+        // Last page
+        pages.push(
+          <div key={i} style={{ 
+            width: '100%', 
+            height: '100%', 
+            background: 'transparent', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: 0, 
+            margin: 0, 
+            borderRadius: 0,
+            transformStyle: 'preserve-3d',
+            backfaceVisibility: 'hidden'
+          }}>
+            <img 
+              src={pageImages[i]} 
+              alt={`Page ${i + 1}`} 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'contain', 
+                display: 'block', 
+                margin: 0, 
+                padding: 0, 
+                borderRadius: 0,
+                boxShadow: '0 0 20px rgba(0,0,0,0.2)',
+                transform: 'translateZ(0)'
+              }} 
+            />
+          </div>
+        );
+      } else {
+        // Two pages at a time
+        pages.push(
+          <div key={i} style={{ 
+            width: '100%', 
+            height: '100%', 
+            background: 'transparent', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            padding: 0, 
+            margin: 0, 
+            borderRadius: 0,
+            transformStyle: 'preserve-3d',
+            backfaceVisibility: 'hidden'
+          }}>
+            <img 
+              src={pageImages[i]} 
+              alt={`Page ${i + 1}`} 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'contain', 
+                display: 'block', 
+                margin: 0, 
+                padding: 0, 
+                borderRadius: 0,
+                boxShadow: '0 0 20px rgba(0,0,0,0.2)',
+                transform: 'translateZ(0)'
+              }} 
+            />
+          </div>
+        );
+      }
+    }
+    return pages;
+  };
+
   return (
     <AppContainer>
       <FlipBookOuter>
@@ -951,40 +1060,7 @@ function PDFViewer() {
                 '--page-transform-origin': 'left center'
               }}
             >
-              {pageImages.map((src, idx) => (
-                <div 
-                  key={idx} 
-                  style={{ 
-                    width: '100%', 
-                    height: '100%', 
-                    background: 'transparent', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    padding: 0, 
-                    margin: 0, 
-                    borderRadius: 0,
-                    transformStyle: 'preserve-3d',
-                    backfaceVisibility: 'hidden'
-                  }}
-                >
-                  <img 
-                    src={src} 
-                    alt={`Page ${idx + 1}`} 
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'contain', 
-                      display: 'block', 
-                      margin: 0, 
-                      padding: 0, 
-                      borderRadius: 0,
-                      boxShadow: '0 0 20px rgba(0,0,0,0.2)',
-                      transform: 'translateZ(0)'
-                    }} 
-                  />
-                </div>
-              ))}
+              {renderPages()}
             </HTMLFlipBook>
           )}
         </FlipBookCard>
