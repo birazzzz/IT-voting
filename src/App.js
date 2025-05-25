@@ -26,6 +26,8 @@ const GlobalStyle = createGlobalStyle`
     padding: 0 !important;
     margin: 0 !important;
     perspective: 2000px;
+    transform-style: preserve-3d;
+    overflow: visible !important;
   }
   .flip-book .page-wrapper .page {
     margin: 0 !important;
@@ -33,6 +35,7 @@ const GlobalStyle = createGlobalStyle`
     transform-style: preserve-3d;
     transform-origin: left center;
     transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+    overflow: visible !important;
   }
   .flip-book .page-wrapper.flipping .page {
     transform: rotateY(-180deg);
@@ -63,29 +66,36 @@ const GlobalStyle = createGlobalStyle`
     margin: 0 !important;
     padding: 0 !important;
     gap: 0 !important;
+    overflow: visible !important;
   }
   .stf__wrapper {
     margin: 0 !important;
     padding: 0 !important;
     gap: 0 !important;
+    overflow: visible !important;
   }
   .stf__item {
     margin: 0 !important;
     padding: 0 !important;
+    overflow: visible !important;
   }
   .stf__wrapper {
     padding: 0 !important;
+    overflow: visible !important;
   }
   .stf__item {
     padding: 0 !important;
+    overflow: visible !important;
   }
   .stf__page {
     padding: 0 !important;
     margin: 0 !important;
+    overflow: visible !important;
   }
   .stf__page-content {
     padding: 0 !important;
     margin: 0 !important;
+    overflow: visible !important;
   }
 `;
 
@@ -159,6 +169,8 @@ const FlipBookOuter = styled.div`
   width: 100vw;
   height: calc(100vh - 60px);
   position: relative;
+  perspective: 2000px;
+  overflow: visible;
   @media (max-width: 600px) {
     margin: 0;
   }
@@ -175,12 +187,13 @@ const FlipBookCard = styled.div`
   justify-content: center;
   width: 850px;
   max-width: 90vw;
-  overflow: hidden;
+  overflow: visible;
   margin: auto;
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
   @media (max-width: 600px) {
     padding: 0;
     border-radius: 16px;
