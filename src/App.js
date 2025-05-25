@@ -247,10 +247,6 @@ const NextButton = styled(NavButton)`
 `;
 
 const PageNumberPill = styled.div`
-  position: fixed;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
   background: #ECEAE7;
   color: #222;
   font-size: 12px;
@@ -261,11 +257,54 @@ const PageNumberPill = styled.div`
   padding: 10px 32px;
   display: inline-block;
   letter-spacing: 0.04em;
-  z-index: 1000;
   @media (max-width: 600px) {
     font-size: 12px;
     padding: 6px 16px;
   }
+`;
+
+const MuteButton = styled.button`
+  background: #ECEAE7;
+  color: #222;
+  border: 1px solid #DEDEDE;
+  border-radius: 999px;
+  width: 38.5px;
+  height: 38.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  &:hover {
+    background: #81EDFF;
+    border-color: #81EDFF;
+  }
+
+  .material-symbols-outlined {
+    font-size: 20px;
+  }
+
+  @media (max-width: 600px) {
+    width: 32px;
+    height: 32px;
+    
+    .material-symbols-outlined {
+      font-size: 16px;
+    }
+  }
+`;
+
+const ControlsContainer = styled.div`
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
 `;
 
 const AnalyticsButton = styled.button`
@@ -653,8 +692,117 @@ function PDFViewer() {
   const [viewCount, setViewCount] = useState(0);
   const [lastOpened, setLastOpened] = useState(null);
   const pageStartTime = useRef(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const pageCache = useRef(new Map());
 
   const selectedPDF = PDF_FILES.find(pdf => pdf.id === parseInt(id));
+
+  const loadPage = async (page, pdf) => {
+    try {
+      const pageNum = page.pageNumber;
+      if (pageCache.current.has(pageNum)) {
+        return pageCache.current.get(pageNum);
+      }
+
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const context = canvas.getContext('2d', { alpha: false });
+      
+      // Optimize rendering settings
+      const renderContext = {
+        canvasContext: context,
+        viewport: viewport,
+        intent: 'display',
+        renderInteractiveForms: false,
+        enableWebGL: true,
+        cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/',
+        cMapPacked: true,
+      };
+
+      await page.render(renderContext).promise;
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      pageCache.current.set(pageNum, imageData);
+      return imageData;
+    } catch (error) {
+      console.error(`Error loading page ${page.pageNumber}:`, error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedPDF) {
+      navigate('/');
+      return;
+    }
+
+    const loadPdf = async () => {
+      try {
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+        
+        // Set up caching
+        const cacheKey = `pdf_cache_${selectedPDF.id}`;
+        const cachedData = localStorage.getItem(cacheKey);
+        
+        if (cachedData) {
+          const { numPages, images } = JSON.parse(cachedData);
+          setNumPages(numPages);
+          setPageImages(images);
+          return;
+        }
+
+        // Load PDF with optimized settings
+        const loadingTask = pdfjsLib.getDocument({
+          url: selectedPDF.path,
+          cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/',
+          cMapPacked: true,
+          standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/standard_fonts/',
+          disableFontFace: true,
+          useSystemFonts: true,
+        });
+
+        const pdf = await loadingTask.promise;
+        setNumPages(pdf.numPages);
+
+        // Load pages in parallel with progress tracking
+        const pagePromises = [];
+        const loadedImages = new Array(pdf.numPages).fill(null);
+        
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const pagePromise = (async () => {
+            const page = await pdf.getPage(i);
+            const imageData = await loadPage(page, pdf);
+            loadedImages[i - 1] = imageData;
+            setLoadingProgress((prev) => prev + (100 / pdf.numPages));
+            return imageData;
+          })();
+          pagePromises.push(pagePromise);
+        }
+
+        // Process pages in chunks to avoid overwhelming the browser
+        const chunkSize = 4;
+        for (let i = 0; i < pagePromises.length; i += chunkSize) {
+          const chunk = pagePromises.slice(i, i + chunkSize);
+          await Promise.all(chunk);
+          setPageImages([...loadedImages]);
+        }
+
+        // Cache the results
+        localStorage.setItem(cacheKey, JSON.stringify({
+          numPages: pdf.numPages,
+          images: loadedImages,
+        }));
+
+      } catch (error) {
+        console.error('Error loading PDF:', error);
+      }
+    };
+
+    loadPdf();
+  }, [selectedPDF, navigate]);
 
   useEffect(() => {
     // Load analytics data from localStorage
@@ -677,25 +825,6 @@ function PDFViewer() {
       navigate('/');
       return;
     }
-
-    const loadPdf = async () => {
-      const loadingTask = pdfjsLib.getDocument(selectedPDF.path);
-      const pdf = await loadingTask.promise;
-      setNumPages(pdf.numPages);
-      const images = [];
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 1.5 });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const context = canvas.getContext('2d');
-        await page.render({ canvasContext: context, viewport }).promise;
-        images.push(canvas.toDataURL());
-      }
-      setPageImages(images);
-    };
-    loadPdf();
 
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
@@ -724,12 +853,26 @@ function PDFViewer() {
 
   const handlePrev = () => {
     if (flipBook.current) {
+      // Play sound if not muted
+      if (!isMuted && audioContextRef.current && audioBufferRef.current && !audioError) {
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = audioBufferRef.current;
+        source.connect(audioContextRef.current.destination);
+        source.start(0);
+      }
       flipBook.current.pageFlip().flipPrev();
     }
   };
 
   const handleNext = () => {
     if (flipBook.current) {
+      // Play sound if not muted
+      if (!isMuted && audioContextRef.current && audioBufferRef.current && !audioError) {
+        const source = audioContextRef.current.createBufferSource();
+        source.buffer = audioBufferRef.current;
+        source.connect(audioContextRef.current.destination);
+        source.start(0);
+      }
       flipBook.current.pageFlip().flipNext();
     }
   };
@@ -750,14 +893,6 @@ function PDFViewer() {
     // Start timing for new spread
     pageStartTime.current = Date.now();
     setCurrentPage(newPage);
-
-    // Play sound
-    if (audioContextRef.current && audioBufferRef.current && !audioError) {
-      const source = audioContextRef.current.createBufferSource();
-      source.buffer = audioBufferRef.current;
-      source.connect(audioContextRef.current.destination);
-      source.start(0);
-    }
   };
 
   const isPrevDisabled = currentPage === 1;
@@ -861,9 +996,37 @@ function PDFViewer() {
           </NextButton>
         )}
       </FlipBookOuter>
-      <PageNumberPill>
-        {currentPage} - {Math.min(currentPage + 1, numPages)} of {numPages}
-      </PageNumberPill>
+      <ControlsContainer>
+        <MuteButton 
+          onClick={() => setIsMuted(!isMuted)} 
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          <span className="material-symbols-outlined">
+            {isMuted ? 'volume_off' : 'volume_up'}
+          </span>
+        </MuteButton>
+        <PageNumberPill>
+          {currentPage} - {Math.min(currentPage + 1, numPages)} of {numPages}
+        </PageNumberPill>
+      </ControlsContainer>
+      {loadingProgress < 100 && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          background: '#ECEAE7',
+          padding: '12px 24px',
+          borderRadius: '999px',
+          fontSize: '14px',
+          color: '#222',
+          zIndex: 1000,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          border: '1px solid #DEDEDE'
+        }}>
+          Loading: {Math.round(loadingProgress)}%
+        </div>
+      )}
       {audioError && (
         <div style={{ color: 'red', marginBottom: 16 }}>Audio could not be played or is not supported.</div>
       )}
