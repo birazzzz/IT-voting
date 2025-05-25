@@ -25,10 +25,39 @@ const GlobalStyle = createGlobalStyle`
   .flip-book .page-wrapper {
     padding: 0 !important;
     margin: 0 !important;
+    perspective: 2000px;
   }
   .flip-book .page-wrapper .page {
     margin: 0 !important;
     padding: 0 !important;
+    transform-style: preserve-3d;
+    transform-origin: left center;
+    transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+  }
+  .flip-book .page-wrapper.flipping .page {
+    transform: rotateY(-180deg);
+  }
+  .flip-book .page-wrapper.flipping .page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 100%);
+    transform: rotateY(180deg);
+    transform-origin: left center;
+    z-index: 2;
+  }
+  .flip-book .page-wrapper.flipping .page::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 100%);
+    z-index: 2;
   }
   .stf__block {
     margin: 0 !important;
@@ -766,12 +795,46 @@ function PDFViewer() {
                 boxShadow: 'none',
                 padding: 0,
                 '--page-gap': '0px',
-                '--page-padding': '0px'
+                '--page-padding': '0px',
+                '--page-shadow': '0 0 20px rgba(0,0,0,0.2)',
+                '--page-transition': 'transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1)',
+                '--page-perspective': '2000px',
+                '--page-transform-style': 'preserve-3d',
+                '--page-transform-origin': 'left center'
               }}
             >
               {pageImages.map((src, idx) => (
-                <div key={idx} style={{ width: '100%', height: '100%', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, margin: 0, borderRadius: 0 }}>
-                  <img src={src} alt={`Page ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', margin: 0, padding: 0, borderRadius: 0 }} />
+                <div 
+                  key={idx} 
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    background: 'transparent', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    padding: 0, 
+                    margin: 0, 
+                    borderRadius: 0,
+                    transformStyle: 'preserve-3d',
+                    backfaceVisibility: 'hidden'
+                  }}
+                >
+                  <img 
+                    src={src} 
+                    alt={`Page ${idx + 1}`} 
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'contain', 
+                      display: 'block', 
+                      margin: 0, 
+                      padding: 0, 
+                      borderRadius: 0,
+                      boxShadow: '0 0 20px rgba(0,0,0,0.2)',
+                      transform: 'translateZ(0)'
+                    }} 
+                  />
                 </div>
               ))}
             </HTMLFlipBook>
