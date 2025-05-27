@@ -482,6 +482,7 @@ function PDFViewer({ pdfId }) {
   const [numPages, setNumPages] = useState(0);
   const [pageImages, setPageImages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
   const flipBook = useRef();
   const [audioError, setAudioError] = useState(false);
   const audioContextRef = useRef(null);
@@ -526,6 +527,15 @@ function PDFViewer({ pdfId }) {
       document.removeEventListener('dragstart', preventDefault);
       document.removeEventListener('keydown', preventKeyboardShortcuts);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const selectedPDF = PDF_FILES.find(pdf => pdf.id === pdfId);
@@ -686,34 +696,16 @@ function PDFViewer({ pdfId }) {
     localStorage.setItem(`pdf_analytics_${pdfId}`, JSON.stringify(analyticsData));
   }, [pageTimes, viewCount, lastOpened, pdfId]);
 
-  const handlePrev = () => {
-    if (flipBook.current) {
-      // Play sound if not muted
-      if (!isMuted && audioContextRef.current && audioBufferRef.current && !audioError) {
-        const source = audioContextRef.current.createBufferSource();
-        source.buffer = audioBufferRef.current;
-        source.connect(audioContextRef.current.destination);
-        source.start(0);
-      }
-      flipBook.current.pageFlip().flipPrev();
-    }
-  };
-
-  const handleNext = () => {
-    if (flipBook.current) {
-      // Play sound if not muted
-      if (!isMuted && audioContextRef.current && audioBufferRef.current && !audioError) {
-        const source = audioContextRef.current.createBufferSource();
-        source.buffer = audioBufferRef.current;
-        source.connect(audioContextRef.current.destination);
-        source.start(0);
-      }
-      flipBook.current.pageFlip().flipNext();
-    }
-  };
-
   const onFlip = (e) => {
     const newPage = e.data + 1;
+    
+    // Play sound if not muted
+    if (!isMuted && audioContextRef.current && audioBufferRef.current && !audioError) {
+      const source = audioContextRef.current.createBufferSource();
+      source.buffer = audioBufferRef.current;
+      source.connect(audioContextRef.current.destination);
+      source.start(0);
+    }
     
     // Record time spent on previous spread (two pages)
     if (pageStartTime.current) {
@@ -730,114 +722,57 @@ function PDFViewer({ pdfId }) {
     setCurrentPage(newPage);
   };
 
+  const handlePrev = () => {
+    if (flipBook.current) {
+      flipBook.current.pageFlip().flipPrev();
+    }
+  };
+
+  const handleNext = () => {
+    if (flipBook.current) {
+      flipBook.current.pageFlip().flipNext();
+    }
+  };
+
   const isPrevDisabled = currentPage === 1;
-  const isNextDisabled = currentPage + 1 >= numPages;
+  const isNextDisabled = isMobile ? currentPage >= numPages : currentPage + 1 >= numPages;
 
   const renderPages = () => {
     if (pageImages.length === 0) return null;
 
     const pages = [];
     for (let i = 0; i < pageImages.length; i++) {
-      if (i === 0) {
-        // First page
-        pages.push(
-          <div key={i} style={{ 
-            width: '100%', 
-            height: '100%', 
-            background: 'transparent', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            padding: 0, 
-            margin: 0, 
-            borderRadius: 0,
-            transformStyle: 'preserve-3d',
-            backfaceVisibility: 'hidden'
-          }}>
-            <img 
-              src={pageImages[i]} 
-              alt={`Page ${i + 1}`} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'contain', 
-                display: 'block', 
-                margin: 0, 
-                padding: 0, 
-                borderRadius: 0,
-                boxShadow: '0 0 20px rgba(0,0,0,0.2)',
-                transform: 'translateZ(0)'
-              }} 
-            />
-          </div>
-        );
-      } else if (i === pageImages.length - 1) {
-        // Last page
-        pages.push(
-          <div key={i} style={{ 
-            width: '100%', 
-            height: '100%', 
-            background: 'transparent', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            padding: 0, 
-            margin: 0, 
-            borderRadius: 0,
-            transformStyle: 'preserve-3d',
-            backfaceVisibility: 'hidden'
-          }}>
-            <img 
-              src={pageImages[i]} 
-              alt={`Page ${i + 1}`} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'contain', 
-                display: 'block', 
-                margin: 0, 
-                padding: 0, 
-                borderRadius: 0,
-                boxShadow: '0 0 20px rgba(0,0,0,0.2)',
-                transform: 'translateZ(0)'
-              }} 
-            />
-          </div>
-        );
-      } else {
-        // Two pages at a time
-        pages.push(
-          <div key={i} style={{ 
-            width: '100%', 
-            height: '100%', 
-            background: 'transparent', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            padding: 0, 
-            margin: 0, 
-            borderRadius: 0,
-            transformStyle: 'preserve-3d',
-            backfaceVisibility: 'hidden'
-          }}>
-            <img 
-              src={pageImages[i]} 
-              alt={`Page ${i + 1}`} 
-              style={{ 
-                width: '100%', 
-                height: '100%', 
-                objectFit: 'contain', 
-                display: 'block', 
-                margin: 0, 
-                padding: 0, 
-                borderRadius: 0,
-                boxShadow: '0 0 20px rgba(0,0,0,0.2)',
-                transform: 'translateZ(0)'
-              }} 
-            />
-          </div>
-        );
-      }
+      pages.push(
+        <div key={i} style={{ 
+          width: '100%', 
+          height: '100%', 
+          background: 'transparent', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          padding: 0, 
+          margin: 0, 
+          borderRadius: 0,
+          transformStyle: 'preserve-3d',
+          backfaceVisibility: 'hidden'
+        }}>
+          <img 
+            src={pageImages[i]} 
+            alt={`Page ${i + 1}`} 
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'contain', 
+              display: 'block', 
+              margin: 0, 
+              padding: 0, 
+              borderRadius: 0,
+              boxShadow: '0 0 20px rgba(0,0,0,0.2)',
+              transform: 'translateZ(0)'
+            }} 
+          />
+        </div>
+      );
     }
     return pages;
   };
@@ -864,7 +799,7 @@ function PDFViewer({ pdfId }) {
               maxHeight={1500}
               maxShadowOpacity={0.5}
               showCover={false}
-              mobileScrollSupport={true}
+              mobileScrollSupport={false}
               flipByClick={true}
               onFlip={onFlip}
               ref={flipBook}
@@ -875,11 +810,12 @@ function PDFViewer({ pdfId }) {
               useMouseEvents={true}
               clickEventForward={true}
               disableFlipByClick={false}
-              showPageCorners={true}
+              showPageCorners={false}
               className="flip-book"
               startZIndex={0}
               autoSize={true}
-              swipeDistance={0}
+              swipeDistance={50}
+              useTouchEvents={true}
               style={{ 
                 margin: '0 auto', 
                 gap: 0, 
@@ -892,7 +828,24 @@ function PDFViewer({ pdfId }) {
                 '--page-transition': 'transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1)',
                 '--page-perspective': '2000px',
                 '--page-transform-style': 'preserve-3d',
-                '--page-transform-origin': 'left center'
+                '--page-transform-origin': 'left center',
+                '--page-background': 'transparent',
+                '--page-border': 'none',
+                '--page-border-radius': '0',
+                '--page-margin': '0',
+                '--page-box-shadow': 'none',
+                '--page-transition-duration': '0.6s',
+                '--page-transition-timing': 'cubic-bezier(0.645, 0.045, 0.355, 1)',
+                '--page-transition-delay': '0s',
+                '--page-transition-property': 'transform',
+                '--page-transition-transform': 'rotateY(-180deg)',
+                '--page-transition-transform-origin': 'left center',
+                '--page-transition-backface-visibility': 'hidden',
+                '--page-transition-perspective': '2000px',
+                '--page-transition-perspective-origin': '50% 50%',
+                '--page-transition-transform-origin-x': '0%',
+                '--page-transition-transform-origin-y': '50%',
+                '--page-transition-transform-origin-z': '0'
               }}
             >
               {renderPages()}
@@ -917,7 +870,11 @@ function PDFViewer({ pdfId }) {
           </span>
         </MuteButton>
         <PageNumberPill>
-          {currentPage} - {Math.min(currentPage + 1, numPages)} of {numPages}
+          {isMobile ? (
+            `${currentPage} of ${numPages}`
+          ) : (
+            `${currentPage} - ${Math.min(currentPage + 1, numPages)} of ${numPages}`
+          )}
         </PageNumberPill>
       </ControlsContainer>
       {loadingProgress < 100 && (
