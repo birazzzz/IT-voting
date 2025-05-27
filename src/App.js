@@ -3,7 +3,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 import HTMLFlipBook from 'react-pageflip';
-import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate, useLocation, Navigate } from 'react-router-dom';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -477,213 +477,39 @@ const PDF_FILES = [
   }
 ];
 
-function Dashboard() {
-  const [showAnalytics, setShowAnalytics] = useState(false);
-  const [analyticsData, setAnalyticsData] = useState({});
-  const [activeTab, setActiveTab] = useState('overview');
-  const [selectedPDF, setSelectedPDF] = useState('all');
+function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const data = {};
-    PDF_FILES.forEach(pdf => {
-      const storedAnalytics = localStorage.getItem(`pdf_analytics_${pdf.id}`);
-      if (storedAnalytics) {
-        data[pdf.id] = JSON.parse(storedAnalytics);
-      }
-    });
-    setAnalyticsData(data);
-  }, []);
-
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds}s`;
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Never';
-    const date = new Date(dateString);
-    return date.toLocaleString();
-  };
-
-  const getPageRange = (page) => {
-    const start = page * 2 - 1;
-    const end = page * 2;
-    return `${start}-${end}`;
-  };
-
-  const getTotalViews = () => {
-    return Object.values(analyticsData).reduce((sum, data) => sum + (data.viewCount || 0), 0);
-  };
-
-  const getTotalTime = () => {
-    return Object.values(analyticsData).reduce((sum, data) => {
-      const pageTimes = data.pageTimes || {};
-      return sum + Object.values(pageTimes).reduce((pageSum, time) => pageSum + time, 0);
-    }, 0);
-  };
-
-  const getMostViewedPDF = () => {
-    return PDF_FILES.reduce((max, pdf) => {
-      const data = analyticsData[pdf.id] || { viewCount: 0 };
-      return (data.viewCount || 0) > (max.viewCount || 0) ? pdf : max;
-    }, { name: 'None', viewCount: 0 });
-  };
-
-  const renderOverview = () => (
-    <>
-      <AnalyticsGrid>
-        <StatCard>
-          <StatValue>{getTotalViews()}</StatValue>
-          <StatLabel>Total Views</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>{formatTime(getTotalTime())}</StatValue>
-          <StatLabel>Total Time Spent</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>{getMostViewedPDF().name}</StatValue>
-          <StatLabel>Most Viewed PDF</StatLabel>
-        </StatCard>
-      </AnalyticsGrid>
-      <TimeChart>
-        <StatLabel style={{ marginBottom: '16px' }}>Time Spent per PDF</StatLabel>
-        {PDF_FILES.map(pdf => {
-          const data = analyticsData[pdf.id] || { pageTimes: {} };
-          const totalTime = Object.values(data.pageTimes || {}).reduce((sum, time) => sum + time, 0);
-          const maxTime = Math.max(...Object.values(analyticsData).map(d => 
-            Object.values(d.pageTimes || {}).reduce((sum, time) => sum + time, 0)
-          ));
-          const percentage = maxTime ? (totalTime / maxTime) * 100 : 0;
-          
-          return (
-            <div key={pdf.id} style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <StatLabel>{pdf.name}</StatLabel>
-                <StatLabel>{formatTime(totalTime)}</StatLabel>
-              </div>
-              <ChartBar style={{ width: `${percentage}%` }} />
-            </div>
-          );
-        })}
-      </TimeChart>
-    </>
-  );
-
-  const renderDetailed = () => {
-    const pdfs = selectedPDF === 'all' 
-      ? PDF_FILES 
-      : PDF_FILES.filter(pdf => pdf.id === parseInt(selectedPDF));
-
-    return pdfs.map(pdf => {
-      const data = analyticsData[pdf.id] || { pageTimes: {}, viewCount: 0, lastOpened: null };
-      return (
-        <div key={pdf.id} style={{ marginBottom: '32px' }}>
-          <StatLabel style={{ fontSize: '18px', fontWeight: '600', color: '#222', marginBottom: '16px' }}>
-            {pdf.name}
-          </StatLabel>
-          <AnalyticsGrid>
-            <StatCard>
-              <StatValue>{data.viewCount || 0}</StatValue>
-              <StatLabel>Total Views</StatLabel>
-            </StatCard>
-            <StatCard>
-              <StatValue>{formatDate(data.lastOpened)}</StatValue>
-              <StatLabel>Last Opened</StatLabel>
-            </StatCard>
-          </AnalyticsGrid>
-          <TimeChart>
-            <StatLabel style={{ marginBottom: '16px' }}>Time Spent per Spread</StatLabel>
-            {Object.entries(data.pageTimes || {})
-              .sort(([a], [b]) => parseInt(a) - parseInt(b))
-              .map(([page, time]) => {
-                const maxTime = Math.max(...Object.values(data.pageTimes || {}));
-                const percentage = maxTime ? (time / maxTime) * 100 : 0;
-                
-                return (
-                  <div key={page} style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <StatLabel>Pages {getPageRange(parseInt(page))}</StatLabel>
-                      <StatLabel>{formatTime(time)}</StatLabel>
-                    </div>
-                    <ChartBar style={{ width: `${percentage}%` }} />
-                  </div>
-                );
-              })}
-          </TimeChart>
-        </div>
-      );
-    });
-  };
-
-  const handlePDFClick = (pdfId) => {
-    // Open in new tab with isolated route
-    window.open(`/pdf-${pdfId}`, '_blank');
-  };
+    // If someone tries to access the root URL or any invalid URL
+    if (location.pathname === '/' || !location.pathname.match(/^\/[1-2]$/)) {
+      // Redirect to a 404 page or the first PDF
+      navigate('/1', { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   return (
-    <AppContainer>
-      <AnalyticsButton onClick={() => setShowAnalytics(true)}>
-        <span className="material-symbols-outlined">analytics</span>
-        Analytics
-      </AnalyticsButton>
-      {showAnalytics && (
-        <>
-          <ModalOverlay onClick={() => setShowAnalytics(false)} />
-          <AnalyticsModal>
-            <AnalyticsTitle>
-              <span className="material-symbols-outlined">insights</span>
-              PDF Analytics Dashboard
-            </AnalyticsTitle>
-            
-            <TabsContainer>
-              <Tab 
-                active={activeTab === 'overview'} 
-                onClick={() => setActiveTab('overview')}
-              >
-                Overview
-              </Tab>
-              <Tab 
-                active={activeTab === 'detailed'} 
-                onClick={() => setActiveTab('detailed')}
-              >
-                Detailed View
-              </Tab>
-            </TabsContainer>
-
-            {activeTab === 'detailed' && (
-              <PDFSelector 
-                value={selectedPDF} 
-                onChange={(e) => setSelectedPDF(e.target.value)}
-              >
-                <option value="all">All PDFs</option>
-                {PDF_FILES.map(pdf => (
-                  <option key={pdf.id} value={pdf.id}>{pdf.name}</option>
-                ))}
-              </PDFSelector>
-            )}
-
-            {activeTab === 'overview' ? renderOverview() : renderDetailed()}
-          </AnalyticsModal>
-        </>
-      )}
-      <DashboardContainer>
+    <>
+      <GlobalStyle />
+      <Routes>
+        {/* Remove the dashboard route */}
         {PDF_FILES.map((pdf) => (
-          <div 
-            key={pdf.id} 
-            onClick={() => handlePDFClick(pdf.id)}
-            style={{ textDecoration: 'none', cursor: 'pointer' }}
-          >
-            <PDFCard>
-              <PDFIcon>
-                <span className="material-symbols-outlined">description</span>
-              </PDFIcon>
-              <PDFTitle>{pdf.name}</PDFTitle>
-            </PDFCard>
-          </div>
+          <Route
+            key={pdf.id}
+            path={`/${pdf.id}`}
+            element={
+              <PDFViewer
+                id={pdf.id}
+                isIsolated={true}
+              />
+            }
+          />
         ))}
-      </DashboardContainer>
-    </AppContainer>
+        {/* Catch all other routes and redirect to first PDF */}
+        <Route path="*" element={<Navigate to="/1" replace />} />
+      </Routes>
+    </>
   );
 }
 
@@ -704,41 +530,39 @@ function PDFViewer({ id, isIsolated }) {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const pageCache = useRef(new Map());
 
-  // Prevent navigation and context menu if isolated
+  // Prevent navigation and context menu
   useEffect(() => {
-    if (isIsolated) {
-      // Disable browser back button
+    // Disable browser back button
+    window.history.pushState(null, '', window.location.href);
+    window.onpopstate = function() {
       window.history.pushState(null, '', window.location.href);
-      window.onpopstate = function() {
-        window.history.pushState(null, '', window.location.href);
-      };
+    };
 
-      // Prevent right-click and other context menus
-      const preventDefault = (e) => e.preventDefault();
-      document.addEventListener('contextmenu', preventDefault);
-      document.addEventListener('selectstart', preventDefault);
-      document.addEventListener('dragstart', preventDefault);
+    // Prevent right-click and other context menus
+    const preventDefault = (e) => e.preventDefault();
+    document.addEventListener('contextmenu', preventDefault);
+    document.addEventListener('selectstart', preventDefault);
+    document.addEventListener('dragstart', preventDefault);
 
-      // Prevent keyboard shortcuts
-      const preventKeyboardShortcuts = (e) => {
-        if (
-          (e.ctrlKey || e.metaKey) && 
-          (e.key === 'r' || e.key === 'u' || e.key === 's' || e.key === 'p')
-        ) {
-          e.preventDefault();
-        }
-      };
-      document.addEventListener('keydown', preventKeyboardShortcuts);
+    // Prevent keyboard shortcuts
+    const preventKeyboardShortcuts = (e) => {
+      if (
+        (e.ctrlKey || e.metaKey) && 
+        (e.key === 'r' || e.key === 'u' || e.key === 's' || e.key === 'p')
+      ) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('keydown', preventKeyboardShortcuts);
 
-      return () => {
-        window.onpopstate = null;
-        document.removeEventListener('contextmenu', preventDefault);
-        document.removeEventListener('selectstart', preventDefault);
-        document.removeEventListener('dragstart', preventDefault);
-        document.removeEventListener('keydown', preventKeyboardShortcuts);
-      };
-    }
-  }, [isIsolated]);
+    return () => {
+      window.onpopstate = null;
+      document.removeEventListener('contextmenu', preventDefault);
+      document.removeEventListener('selectstart', preventDefault);
+      document.removeEventListener('dragstart', preventDefault);
+      document.removeEventListener('keydown', preventKeyboardShortcuts);
+    };
+  }, []);
 
   const selectedPDF = PDF_FILES.find(pdf => pdf.id === parseInt(id));
 
@@ -1156,31 +980,6 @@ function PDFViewer({ id, isIsolated }) {
         <div style={{ color: 'red', marginBottom: 16 }}>Audio could not be played or is not supported.</div>
       )}
     </AppContainer>
-  );
-}
-
-function App() {
-  return (
-    <>
-      <GlobalStyle />
-      <Router>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          {PDF_FILES.map((pdf) => (
-            <Route
-              key={pdf.id}
-              path={`/pdf-${pdf.id}`}
-              element={
-                <PDFViewer
-                  id={pdf.id}
-                  isIsolated={true}
-                />
-              }
-            />
-          ))}
-        </Routes>
-      </Router>
-    </>
   );
 }
 
