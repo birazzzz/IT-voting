@@ -616,6 +616,11 @@ function Dashboard() {
     });
   };
 
+  const handlePDFClick = (pdfId) => {
+    // Open in new tab with isolated route
+    window.open(`/pdf-${pdfId}`, '_blank');
+  };
+
   return (
     <AppContainer>
       <AnalyticsButton onClick={() => setShowAnalytics(true)}>
@@ -664,22 +669,25 @@ function Dashboard() {
       )}
       <DashboardContainer>
         {PDF_FILES.map((pdf) => (
-          <Link to={`/viewer/${pdf.id}`} key={pdf.id} style={{ textDecoration: 'none' }}>
+          <div 
+            key={pdf.id} 
+            onClick={() => handlePDFClick(pdf.id)}
+            style={{ textDecoration: 'none', cursor: 'pointer' }}
+          >
             <PDFCard>
               <PDFIcon>
                 <span className="material-symbols-outlined">description</span>
               </PDFIcon>
               <PDFTitle>{pdf.name}</PDFTitle>
             </PDFCard>
-          </Link>
+          </div>
         ))}
       </DashboardContainer>
     </AppContainer>
   );
 }
 
-function PDFViewer() {
-  const { id } = useParams();
+function PDFViewer({ id, isIsolated }) {
   const navigate = useNavigate();
   const [numPages, setNumPages] = useState(0);
   const [pageImages, setPageImages] = useState([]);
@@ -695,6 +703,42 @@ function PDFViewer() {
   const [isMuted, setIsMuted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const pageCache = useRef(new Map());
+
+  // Prevent navigation and context menu if isolated
+  useEffect(() => {
+    if (isIsolated) {
+      // Disable browser back button
+      window.history.pushState(null, '', window.location.href);
+      window.onpopstate = function() {
+        window.history.pushState(null, '', window.location.href);
+      };
+
+      // Prevent right-click and other context menus
+      const preventDefault = (e) => e.preventDefault();
+      document.addEventListener('contextmenu', preventDefault);
+      document.addEventListener('selectstart', preventDefault);
+      document.addEventListener('dragstart', preventDefault);
+
+      // Prevent keyboard shortcuts
+      const preventKeyboardShortcuts = (e) => {
+        if (
+          (e.ctrlKey || e.metaKey) && 
+          (e.key === 'r' || e.key === 'u' || e.key === 's' || e.key === 'p')
+        ) {
+          e.preventDefault();
+        }
+      };
+      document.addEventListener('keydown', preventKeyboardShortcuts);
+
+      return () => {
+        window.onpopstate = null;
+        document.removeEventListener('contextmenu', preventDefault);
+        document.removeEventListener('selectstart', preventDefault);
+        document.removeEventListener('dragstart', preventDefault);
+        document.removeEventListener('keydown', preventKeyboardShortcuts);
+      };
+    }
+  }, [isIsolated]);
 
   const selectedPDF = PDF_FILES.find(pdf => pdf.id === parseInt(id));
 
@@ -1122,7 +1166,18 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/viewer/:id" element={<PDFViewer />} />
+          {PDF_FILES.map((pdf) => (
+            <Route
+              key={pdf.id}
+              path={`/pdf-${pdf.id}`}
+              element={
+                <PDFViewer
+                  id={pdf.id}
+                  isIsolated={true}
+                />
+              }
+            />
+          ))}
         </Routes>
       </Router>
     </>
