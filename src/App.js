@@ -751,6 +751,7 @@ function PDFViewer() {
           const { numPages, images } = JSON.parse(cachedData);
           setNumPages(numPages);
           setPageImages(images);
+          setLoadingProgress(100); // Set to 100% when using cached data
           return;
         }
 
@@ -796,8 +797,12 @@ function PDFViewer() {
           images: loadedImages,
         }));
 
+        // Ensure loading progress is set to 100% after all pages are loaded
+        setLoadingProgress(100);
+
       } catch (error) {
         console.error('Error loading PDF:', error);
+        setLoadingProgress(100); // Set to 100% even on error to hide loading state
       }
     };
 
