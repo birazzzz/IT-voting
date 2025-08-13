@@ -467,13 +467,22 @@ const PDF_FILES = [
     id: 1,
     name: 'Flyer',
     path: '/Flyer.pdf',
-    thumbnail: '/Flyer.pdf'
+    thumbnail: '/Flyer.pdf',
+    version: '1.0'
   },
   {
     id: 2,
     name: 'Brochure',
     path: '/brochure.pdf',
-    thumbnail: '/brochure.pdf'
+    thumbnail: '/brochure.pdf',
+    version: '1.0'
+  },
+  {
+    id: 3,
+    name: 'Story Book',
+    path: '/storybook.pdf',
+    thumbnail: '/storybook.pdf',
+    version: '1.1'
   }
 ];
 
@@ -584,8 +593,8 @@ function PDFViewer({ pdfId }) {
         // Configure PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
         
-        // Set up caching
-        const cacheKey = `pdf_cache_${selectedPDF.id}`;
+        // Set up caching with versioning
+        const cacheKey = `pdf_cache_${selectedPDF.id}_${selectedPDF.version}`;
         const cachedData = localStorage.getItem(cacheKey);
         
         if (cachedData) {
@@ -596,9 +605,9 @@ function PDFViewer({ pdfId }) {
           return;
         }
 
-        // Load PDF with optimized settings
+        // Load PDF with optimized settings and versioning for cache busting
         const loadingTask = pdfjsLib.getDocument({
-          url: selectedPDF.path,
+          url: `${selectedPDF.path}?v=${selectedPDF.version}`,
           cMapUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/cmaps/',
           cMapPacked: true,
           standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@2.16.105/standard_fonts/',
@@ -914,6 +923,7 @@ function App() {
           {/* PDF routes */}
           <Route path="/1" element={<PDFViewer pdfId={1} />} />
           <Route path="/2" element={<PDFViewer pdfId={2} />} />
+          <Route path="/3" element={<PDFViewer pdfId={3} />} />
 
           {/* Redirect root to PDF 1 */}
           <Route path="/" element={<Navigate to="/1" replace />} />
