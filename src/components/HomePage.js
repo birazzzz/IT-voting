@@ -1,7 +1,65 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import logo from '../images/logo.svg';
+
+// Global styles
+const GlobalStyle = createGlobalStyle`
+  :root {
+    --primary-bg: #edeae7;
+    --card-bg: #ffffff;
+    --border-color: #dedede;
+    --hover-border: #81EDFF;
+    --text-primary: #222222;
+    --text-secondary: #666666;
+    --icon-bg: #f5f5f5;
+    --accent-color: #81EDFF;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-hover: rgba(0, 0, 0, 0.1);
+    --chart-color: #81EDFF;
+    
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 40px;
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-pill: 999px;
+    
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+    
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.3s ease;
+    --transition-slow: 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+  }
+  
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--primary-bg);
+    margin: 0;
+    padding: 0;
+    overflow: auto; /* Changed from hidden to auto */
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  .material-symbols-outlined {
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+  }
+`;
 
 // Import styles from our design system
 const PageContainer = styled.div`
@@ -120,34 +178,37 @@ function HomePage() {
   };
 
   return (
-    <PageContainer>
-      <ContentWrapper>
-        <Logo src={logo} alt="Impact Token Logo" />
-        <Title>Impact Token Voting</Title>
-        <Subtitle>Scan the QR code to award your Impact Token</Subtitle>
-        <QRCard onClick={handleQRClick}>
-          {/* In a real application, this would be an actual QR code */}
-          <QRPlaceholder className="material-symbols-outlined">
-            qr_code
-          </QRPlaceholder>
-          <InstructionText>Click to award token</InstructionText>
-        </QRCard>
-        <NavButtons>
-          <NavButton onClick={() => navigate('/results')}>
-            <span className="material-symbols-outlined">leaderboard</span>
-            Results
-          </NavButton>
-          <NavButton onClick={() => navigate('/dashboard')}>
-            <span className="material-symbols-outlined">dashboard</span>
-            Dashboard
-          </NavButton>
-          <NavButton onClick={() => navigate('/lodge')}>
-            <span className="material-symbols-outlined">group</span>
-            Lodge
-          </NavButton>
-        </NavButtons>
-      </ContentWrapper>
-    </PageContainer>
+    <>
+      <GlobalStyle />
+      <PageContainer>
+        <ContentWrapper>
+          <Logo src={logo} alt="Impact Token Logo" />
+          <Title>Impact Token Voting</Title>
+          <Subtitle>Scan the QR code to award your Impact Token</Subtitle>
+          <QRCard onClick={handleQRClick}>
+            {/* In a real application, this would be an actual QR code */}
+            <QRPlaceholder className="material-symbols-outlined">
+              qr_code
+            </QRPlaceholder>
+            <InstructionText>Click to award token</InstructionText>
+          </QRCard>
+          <NavButtons>
+            <NavButton onClick={() => navigate('/results')}>
+              <span className="material-symbols-outlined">leaderboard</span>
+              Results
+            </NavButton>
+            <NavButton onClick={() => navigate('/dashboard')}>
+              <span className="material-symbols-outlined">dashboard</span>
+              Dashboard
+            </NavButton>
+            <NavButton onClick={() => navigate('/lodge')}>
+              <span className="material-symbols-outlined">group</span>
+              Lodge
+            </NavButton>
+          </NavButtons>
+        </ContentWrapper>
+      </PageContainer>
+    </>
   );
 }
 

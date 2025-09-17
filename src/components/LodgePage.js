@@ -1,6 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+
+// Global styles
+const GlobalStyle = createGlobalStyle`
+  :root {
+    --primary-bg: #edeae7;
+    --card-bg: #ffffff;
+    --border-color: #dedede;
+    --hover-border: #81EDFF;
+    --text-primary: #222222;
+    --text-secondary: #666666;
+    --icon-bg: #f5f5f5;
+    --accent-color: #81EDFF;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-hover: rgba(0, 0, 0, 0.1);
+    --chart-color: #81EDFF;
+    
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 40px;
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-pill: 999px;
+    
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+    
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.3s ease;
+    --transition-slow: 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+  }
+  
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--primary-bg);
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  .material-symbols-outlined {
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+  }
+`;
 
 // Import styles from our design system
 const PageContainer = styled.div`
@@ -278,111 +336,114 @@ function LodgePage() {
   };
 
   return (
-    <PageContainer>
-      <ContentWrapper>
-        <Title>Impact Token Lodge</Title>
-        <Subtitle>Manage candidates and view voting results</Subtitle>
-        
-        <SectionCard>
-          <SectionTitle>Add New Candidate</SectionTitle>
-          <Form onSubmit={handleAddCandidate}>
-            <FormGroup>
-              <Label htmlFor="candidateName">Candidate Name</Label>
-              <Input
-                id="candidateName"
-                type="text"
-                value={newCandidate.name}
-                onChange={(e) => setNewCandidate({...newCandidate, name: e.target.value})}
-                placeholder="Enter candidate name"
-                required
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label htmlFor="candidatePosition">Position</Label>
-              <Input
-                id="candidatePosition"
-                type="text"
-                value={newCandidate.position}
-                onChange={(e) => setNewCandidate({...newCandidate, position: e.target.value})}
-                placeholder="Enter candidate position"
-                required
-              />
-            </FormGroup>
-            <Button primary type="submit">
-              <span className="material-symbols-outlined">add</span>
-              Add Candidate
-            </Button>
-          </Form>
-        </SectionCard>
-        
-        <SectionCard>
-          <SectionTitle>Current Candidates</SectionTitle>
-          <CandidatesList>
-            {candidates.map(candidate => (
-              <CandidateItem key={candidate.id}>
-                <CandidateInfo>
-                  <CandidateName>{candidate.name}</CandidateName>
-                  <CandidatePosition>{candidate.position}</CandidatePosition>
-                </CandidateInfo>
-                <Button 
-                  danger 
-                  onClick={() => handleRemoveCandidate(candidate.id)}
-                >
-                  <span className="material-symbols-outlined">delete</span>
-                  Remove
-                </Button>
-              </CandidateItem>
-            ))}
-          </CandidatesList>
-        </SectionCard>
-        
-        <SectionCard>
-          <SectionTitle>Voter-Candidate Relationships</SectionTitle>
-          <FilterContainer>
-            <FilterLabel htmlFor="candidateFilter">Filter by candidate:</FilterLabel>
-            <Select 
-              id="candidateFilter" 
-              value={filter} 
-              onChange={(e) => setFilter(e.target.value)}
-            >
-              <option value="all">All Candidates</option>
+    <>
+      <GlobalStyle />
+      <PageContainer>
+        <ContentWrapper>
+          <Title>Impact Token Lodge</Title>
+          <Subtitle>Manage candidates and view voting results</Subtitle>
+          
+          <SectionCard>
+            <SectionTitle>Add New Candidate</SectionTitle>
+            <Form onSubmit={handleAddCandidate}>
+              <FormGroup>
+                <Label htmlFor="candidateName">Candidate Name</Label>
+                <Input
+                  id="candidateName"
+                  type="text"
+                  value={newCandidate.name}
+                  onChange={(e) => setNewCandidate({...newCandidate, name: e.target.value})}
+                  placeholder="Enter candidate name"
+                  required
+                />
+              </FormGroup>
+              <FormGroup>
+                <Label htmlFor="candidatePosition">Position</Label>
+                <Input
+                  id="candidatePosition"
+                  type="text"
+                  value={newCandidate.position}
+                  onChange={(e) => setNewCandidate({...newCandidate, position: e.target.value})}
+                  placeholder="Enter candidate position"
+                  required
+                />
+              </FormGroup>
+              <Button primary type="submit">
+                <span className="material-symbols-outlined">add</span>
+                Add Candidate
+              </Button>
+            </Form>
+          </SectionCard>
+          
+          <SectionCard>
+            <SectionTitle>Current Candidates</SectionTitle>
+            <CandidatesList>
               {candidates.map(candidate => (
-                <option key={candidate.id} value={candidate.id}>
-                  {candidate.name}
-                </option>
+                <CandidateItem key={candidate.id}>
+                  <CandidateInfo>
+                    <CandidateName>{candidate.name}</CandidateName>
+                    <CandidatePosition>{candidate.position}</CandidatePosition>
+                  </CandidateInfo>
+                  <Button 
+                    danger 
+                    onClick={() => handleRemoveCandidate(candidate.id)}
+                  >
+                    <span className="material-symbols-outlined">delete</span>
+                    Remove
+                  </Button>
+                </CandidateItem>
               ))}
-            </Select>
-          </FilterContainer>
-          <VotersTable>
-            <TableHead>
-              <tr>
-                <TableHeader>Voter ID</TableHeader>
-                <TableHeader>Voter Name</TableHeader>
-                <TableHeader>Email</TableHeader>
-                <TableHeader>Awarded To</TableHeader>
-              </tr>
-            </TableHead>
-            <tbody>
-              {voters
-                .filter(voter => filter === 'all' || voter.candidateId === parseInt(filter))
-                .map(voter => (
-                  <TableRow key={voter.id}>
-                    <TableCell>{voter.id}</TableCell>
-                    <TableCell>{voter.name}</TableCell>
-                    <TableCell>{voter.email}</TableCell>
-                    <TableCell>{voter.candidateName}</TableCell>
-                  </TableRow>
+            </CandidatesList>
+          </SectionCard>
+          
+          <SectionCard>
+            <SectionTitle>Voter-Candidate Relationships</SectionTitle>
+            <FilterContainer>
+              <FilterLabel htmlFor="candidateFilter">Filter by candidate:</FilterLabel>
+              <Select 
+                id="candidateFilter" 
+                value={filter} 
+                onChange={(e) => setFilter(e.target.value)}
+              >
+                <option value="all">All Candidates</option>
+                {candidates.map(candidate => (
+                  <option key={candidate.id} value={candidate.id}>
+                    {candidate.name}
+                  </option>
                 ))}
-            </tbody>
-          </VotersTable>
-        </SectionCard>
-        
-        <BackButton onClick={() => navigate('/')}>
-          <span className="material-symbols-outlined">arrow_back</span>
-          Back to Home
-        </BackButton>
-      </ContentWrapper>
-    </PageContainer>
+              </Select>
+            </FilterContainer>
+            <VotersTable>
+              <TableHead>
+                <tr>
+                  <TableHeader>Voter ID</TableHeader>
+                  <TableHeader>Voter Name</TableHeader>
+                  <TableHeader>Email</TableHeader>
+                  <TableHeader>Awarded To</TableHeader>
+                </tr>
+              </TableHead>
+              <tbody>
+                {voters
+                  .filter(voter => filter === 'all' || voter.candidateId === parseInt(filter))
+                  .map(voter => (
+                    <TableRow key={voter.id}>
+                      <TableCell>{voter.id}</TableCell>
+                      <TableCell>{voter.name}</TableCell>
+                      <TableCell>{voter.email}</TableCell>
+                      <TableCell>{voter.candidateName}</TableCell>
+                    </TableRow>
+                  ))}
+              </tbody>
+            </VotersTable>
+          </SectionCard>
+          
+          <BackButton onClick={() => navigate('/')}>
+            <span className="material-symbols-outlined">arrow_back</span>
+            Back to Home
+          </BackButton>
+        </ContentWrapper>
+      </PageContainer>
+    </>
   );
 }
 

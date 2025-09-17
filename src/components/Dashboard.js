@@ -1,6 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+
+// Global styles
+const GlobalStyle = createGlobalStyle`
+  :root {
+    --primary-bg: #edeae7;
+    --card-bg: #ffffff;
+    --border-color: #dedede;
+    --hover-border: #81EDFF;
+    --text-primary: #222222;
+    --text-secondary: #666666;
+    --icon-bg: #f5f5f5;
+    --accent-color: #81EDFF;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-hover: rgba(0, 0, 0, 0.1);
+    --chart-color: #81EDFF;
+    
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 40px;
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-pill: 999px;
+    
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+    
+    --transition-fast: 0.2s ease;
+    --transition-medium: 0.3s ease;
+    --transition-slow: 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+  }
+  
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--primary-bg);
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  .material-symbols-outlined {
+    font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+  }
+`;
 
 // Import styles from our design system
 const PageContainer = styled.div`
@@ -274,71 +332,74 @@ function Dashboard() {
   };
 
   return (
-    <PageContainer>
-      <ContentWrapper>
-        <Title>Impact Token Dashboard</Title>
-        <Subtitle>List of all awarded Impact Tokens</Subtitle>
-        
-        <InfoBox>
-          <InfoTitle>Netlify Forms Integration</InfoTitle>
-          <InfoList>
-            <li>All Impact Token awards are automatically collected by Netlify Forms</li>
-            <li>To access real token data, go to your Netlify dashboard → Forms → "vote-form"</li>
-            <li>This dashboard shows mock data for demonstration purposes</li>
-            <li>In a production environment, you would fetch data from Netlify Forms API</li>
-          </InfoList>
-        </InfoBox>
-        
-        <ButtonGroup>
-          <ExportButton onClick={handleExportCSV}>
-            <span className="material-symbols-outlined">download</span>
-            Export to CSV
-          </ExportButton>
-          <EraseButton onClick={handleEraseAll}>
-            <span className="material-symbols-outlined">delete</span>
-            Erase All Data
-          </EraseButton>
-        </ButtonGroup>
-        
-        <DashboardCard>
-          <VotersTable>
-            <TableHead>
-              <tr>
-                <TableHeader>Rank</TableHeader>
-                <TableHeader>Token ID</TableHeader>
-                <TableHeader>Recipient Name</TableHeader>
-                <TableHeader>Email Address</TableHeader>
-                <TableHeader>Awarded To</TableHeader>
-                <TableHeader>Award Time</TableHeader>
-                <TableHeader>Actions</TableHeader>
-              </tr>
-            </TableHead>
-            <tbody>
-              {voters.map((voter, index) => (
-                <TableRow key={index}>
-                  <RankCell>{getRankEmoji(index)}</RankCell>
-                  <TableCell>{voter.id}</TableCell>
-                  <TableCell>{voter.name}</TableCell>
-                  <TableCell>{voter.email}</TableCell>
-                  <TableCell>{voter.candidate}</TableCell>
-                  <TableCell>{voter.voteTime}</TableCell>
-                  <ActionCell>
-                    <ActionButton delete onClick={() => handleDelete(voter.id)}>
-                      <span className="material-symbols-outlined">delete</span>
-                    </ActionButton>
-                  </ActionCell>
-                </TableRow>
-              ))}
-            </tbody>
-          </VotersTable>
-        </DashboardCard>
-        
-        <BackButton onClick={() => navigate('/')}>
-          <span className="material-symbols-outlined">arrow_back</span>
-          Back to Home
-        </BackButton>
-      </ContentWrapper>
-    </PageContainer>
+    <>
+      <GlobalStyle />
+      <PageContainer>
+        <ContentWrapper>
+          <Title>Impact Token Dashboard</Title>
+          <Subtitle>List of all awarded Impact Tokens</Subtitle>
+          
+          <InfoBox>
+            <InfoTitle>Netlify Forms Integration</InfoTitle>
+            <InfoList>
+              <li>All Impact Token awards are automatically collected by Netlify Forms</li>
+              <li>To access real token data, go to your Netlify dashboard → Forms → "vote-form"</li>
+              <li>This dashboard shows mock data for demonstration purposes</li>
+              <li>In a production environment, you would fetch data from Netlify Forms API</li>
+            </InfoList>
+          </InfoBox>
+          
+          <ButtonGroup>
+            <ExportButton onClick={handleExportCSV}>
+              <span className="material-symbols-outlined">download</span>
+              Export to CSV
+            </ExportButton>
+            <EraseButton onClick={handleEraseAll}>
+              <span className="material-symbols-outlined">delete</span>
+              Erase All Data
+            </EraseButton>
+          </ButtonGroup>
+          
+          <DashboardCard>
+            <VotersTable>
+              <TableHead>
+                <tr>
+                  <TableHeader>Rank</TableHeader>
+                  <TableHeader>Token ID</TableHeader>
+                  <TableHeader>Recipient Name</TableHeader>
+                  <TableHeader>Email Address</TableHeader>
+                  <TableHeader>Awarded To</TableHeader>
+                  <TableHeader>Award Time</TableHeader>
+                  <TableHeader>Actions</TableHeader>
+                </tr>
+              </TableHead>
+              <tbody>
+                {voters.map((voter, index) => (
+                  <TableRow key={index}>
+                    <RankCell>{getRankEmoji(index)}</RankCell>
+                    <TableCell>{voter.id}</TableCell>
+                    <TableCell>{voter.name}</TableCell>
+                    <TableCell>{voter.email}</TableCell>
+                    <TableCell>{voter.candidate}</TableCell>
+                    <TableCell>{voter.voteTime}</TableCell>
+                    <ActionCell>
+                      <ActionButton delete onClick={() => handleDelete(voter.id)}>
+                        <span className="material-symbols-outlined">delete</span>
+                      </ActionButton>
+                    </ActionCell>
+                  </TableRow>
+                ))}
+              </tbody>
+            </VotersTable>
+          </DashboardCard>
+          
+          <BackButton onClick={() => navigate('/')}>
+            <span className="material-symbols-outlined">arrow_back</span>
+            Back to Home
+          </BackButton>
+        </ContentWrapper>
+      </PageContainer>
+    </>
   );
 }
 
