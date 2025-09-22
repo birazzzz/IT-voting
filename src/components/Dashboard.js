@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { useVote } from './VoteContext';
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -98,24 +99,17 @@ const Subtitle = styled.p`
   max-width: 600px;
 `;
 
-const InfoBox = styled.div`
-  background: #f8f8f8;
-  border-radius: 16px;
-  border: 2px solid #dedede;
-  padding: 24px;
+const TotalTokens = styled.div`
+  background: var(--accent-color);
+  color: var(--text-primary);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: var(--spacing-md);
+  text-align: center;
   width: 100%;
-  text-align: left;
-  margin-bottom: 24px;
-`;
-
-const InfoTitle = styled.h3`
-  color: #222222;
-  margin-top: 0;
-`;
-
-const InfoList = styled.ul`
-  color: #666666;
-  line-height: 1.6;
+  box-shadow: var(--shadow-md);
 `;
 
 const DashboardCard = styled.div`
@@ -264,22 +258,14 @@ const BackButton = styled.button`
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { getTotalVotes, getVoters, resetVotes } = useVote();
   const [voters, setVoters] = useState([]);
 
-  // In a real application, this data would come from Netlify Forms API
-  // For demonstration, we'll use mock data
+  // Fetch voter data
   useEffect(() => {
-    // Mock data for demonstration
-    const mockVoters = [
-      { id: 'P001', name: 'John Smith', email: 'john@example.com', candidate: 'Alex Johnson - Team Lead', voteTime: '2023-05-15 14:30:22' },
-      { id: 'P002', name: 'Emma Johnson', email: 'emma@example.com', candidate: 'Maria Garcia - Design Director', voteTime: '2023-05-15 15:45:17' },
-      { id: 'P003', name: 'Michael Brown', email: 'michael@example.com', candidate: 'James Wilson - Tech Lead', voteTime: '2023-05-15 16:22:05' },
-      { id: 'P004', name: 'Sarah Davis', email: 'sarah@example.com', candidate: 'Sarah Chen - Product Manager', voteTime: '2023-05-15 17:10:44' },
-      { id: 'P005', name: 'Robert Wilson', email: 'robert@example.com', candidate: 'David Brown - Marketing Head', voteTime: '2023-05-15 18:05:33' }
-    ];
-    
-    setVoters(mockVoters);
-  }, []);
+    const voterData = getVoters();
+    setVoters(voterData);
+  }, [getVoters]);
 
   const getRankEmoji = (index) => {
     switch(index + 1) {
@@ -292,8 +278,9 @@ function Dashboard() {
 
   const handleDelete = (tokenId) => {
     if (window.confirm(`Are you sure you want to delete token ${tokenId}?`)) {
-      // In a real application, this would make an API call to delete the token
-      alert(`Token ${tokenId} would be deleted in a real application`);
+      // In a real Netlify Forms implementation, this would make an API call to delete the token
+      // Example: await fetch(`/api/votes/${tokenId}`, { method: 'DELETE' });
+      alert(`Token ${tokenId} would be deleted in a real Netlify Forms implementation`);
     }
   };
 
@@ -307,7 +294,7 @@ function Dashboard() {
         voter.id,
         `"${voter.name}"`,
         voter.email,
-        `"${voter.candidate}"`,
+        `"${Array.isArray(voter.candidateNames) ? voter.candidateNames.join(', ') : voter.candidateName}"`,
         voter.voteTime
       ].join(','))
     ].join('\n');
@@ -326,8 +313,10 @@ function Dashboard() {
 
   const handleEraseAll = () => {
     if (window.confirm('Are you sure you want to erase all data? This action cannot be undone.')) {
-      // In a real application, this would make an API call to delete all tokens
-      alert('All data would be erased in a real application');
+      // Reset all votes to zero
+      resetVotes();
+      // In a real Netlify Forms implementation, this would also clear the form data
+      alert('All data has been reset to zero in a real implementation');
     }
   };
 
@@ -339,15 +328,9 @@ function Dashboard() {
           <Title>Impact Token Dashboard</Title>
           <Subtitle>List of all awarded Impact Tokens</Subtitle>
           
-          <InfoBox>
-            <InfoTitle>Netlify Forms Integration</InfoTitle>
-            <InfoList>
-              <li>All Impact Token awards are automatically collected by Netlify Forms</li>
-              <li>To access real token data, go to your Netlify dashboard → Forms → "vote-form"</li>
-              <li>This dashboard shows mock data for demonstration purposes</li>
-              <li>In a production environment, you would fetch data from Netlify Forms API</li>
-            </InfoList>
-          </InfoBox>
+          <TotalTokens>
+            Total Impact Tokens Awarded: {getTotalVotes()}
+          </TotalTokens>
           
           <ButtonGroup>
             <ExportButton onClick={handleExportCSV}>
@@ -374,21 +357,33 @@ function Dashboard() {
                 </tr>
               </TableHead>
               <tbody>
-                {voters.map((voter, index) => (
-                  <TableRow key={index}>
-                    <RankCell>{getRankEmoji(index)}</RankCell>
-                    <TableCell>{voter.id}</TableCell>
-                    <TableCell>{voter.name}</TableCell>
-                    <TableCell>{voter.email}</TableCell>
-                    <TableCell>{voter.candidate}</TableCell>
-                    <TableCell>{voter.voteTime}</TableCell>
-                    <ActionCell>
-                      <ActionButton delete onClick={() => handleDelete(voter.id)}>
-                        <span className="material-symbols-outlined">delete</span>
-                      </ActionButton>
-                    </ActionCell>
+                {voters.length > 0 ? (
+                  voters.map((voter, index) => (
+                    <TableRow key={index}>
+                      <RankCell>{getRankEmoji(index)}</RankCell>
+                      <TableCell>{voter.id}</TableCell>
+                      <TableCell>{voter.name}</TableCell>
+                      <TableCell>{voter.email}</TableCell>
+                      <TableCell>
+                        {Array.isArray(voter.candidateNames) 
+                          ? voter.candidateNames.join(', ') 
+                          : voter.candidateName}
+                      </TableCell>
+                      <TableCell>{voter.voteTime}</TableCell>
+                      <ActionCell>
+                        <ActionButton delete onClick={() => handleDelete(voter.id)}>
+                          <span className="material-symbols-outlined">delete</span>
+                        </ActionButton>
+                      </ActionCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan="7" style={{ textAlign: 'center' }}>
+                      No votes have been recorded yet. Be the first to vote!
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </tbody>
             </VotersTable>
           </DashboardCard>

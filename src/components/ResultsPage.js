@@ -1,6 +1,7 @@
 import React from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { useVote } from './VoteContext';
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -199,15 +200,18 @@ const BackButton = styled.button`
 
 function ResultsPage() {
   const navigate = useNavigate();
+  const { getSortedCandidatesWithVotes, getTotalVotes } = useVote();
 
-  // Sample results data (in a real app, this would come from an API)
-  const results = [
-    { id: 1, name: "Alex Johnson", position: "Team Lead", votes: 142, percentage: 35 },
-    { id: 2, name: "Maria Garcia", position: "Design Director", votes: 118, percentage: 29 },
-    { id: 3, name: "James Wilson", position: "Tech Lead", votes: 96, percentage: 24 },
-    { id: 4, name: "Sarah Chen", position: "Product Manager", votes: 32, percentage: 8 },
-    { id: 5, name: "David Brown", position: "Marketing Head", votes: 12, percentage: 4 }
-  ];
+  // Get candidates with real vote data, sorted by votes
+  const sortedCandidates = getSortedCandidatesWithVotes();
+  
+  // Calculate percentages
+  const totalVotes = getTotalVotes();
+  
+  const results = sortedCandidates.map(candidate => ({
+    ...candidate,
+    percentage: totalVotes > 0 ? Math.round((candidate.votes / totalVotes) * 100) : 0
+  }));
 
   const getRankEmoji = (rank) => {
     switch(rank) {
@@ -226,23 +230,31 @@ function ResultsPage() {
           <Title>Impact Token Leaderboard</Title>
           <Subtitle>Leaderboard of awarded Impact Tokens</Subtitle>
           
-          <LeaderboardCard>
-            <LeaderboardList>
-              {results.map((candidate, index) => (
-                <LeaderboardItem key={candidate.id} rank={index + 1}>
-                  <RankBadge rank={index + 1}>{getRankEmoji(index + 1)}</RankBadge>
-                  <CandidateInfo>
-                    <CandidateName>{candidate.name}</CandidateName>
-                    <CandidatePosition>{candidate.position}</CandidatePosition>
-                    <VotePercentage>
-                      <PercentageFill percentage={candidate.percentage} />
-                    </VotePercentage>
-                  </CandidateInfo>
-                  <VoteCount>{candidate.votes} IT</VoteCount>
-                </LeaderboardItem>
-              ))}
-            </LeaderboardList>
-          </LeaderboardCard>
+          {totalVotes === 0 ? (
+            <LeaderboardCard>
+              <p style={{ textAlign: 'center', padding: '24px', color: '#666666' }}>
+                No votes have been recorded yet. Be the first to vote!
+              </p>
+            </LeaderboardCard>
+          ) : (
+            <LeaderboardCard>
+              <LeaderboardList>
+                {results.map((candidate, index) => (
+                  <LeaderboardItem key={candidate.id} rank={index + 1}>
+                    <RankBadge rank={index + 1}>{getRankEmoji(index + 1)}</RankBadge>
+                    <CandidateInfo>
+                      <CandidateName>{candidate.name}</CandidateName>
+                      <CandidatePosition>{candidate.position}</CandidatePosition>
+                      <VotePercentage>
+                        <PercentageFill percentage={candidate.percentage} />
+                      </VotePercentage>
+                    </CandidateInfo>
+                    <VoteCount>{candidate.votes} IT</VoteCount>
+                  </LeaderboardItem>
+                ))}
+              </LeaderboardList>
+            </LeaderboardCard>
+          )}
           
           <BackButton onClick={() => navigate('/')}>
             <span className="material-symbols-outlined">arrow_back</span>

@@ -192,20 +192,6 @@ function HomePage() {
             </QRPlaceholder>
             <InstructionText>Click to award token</InstructionText>
           </QRCard>
-          <NavButtons>
-            <NavButton onClick={() => navigate('/results')}>
-              <span className="material-symbols-outlined">leaderboard</span>
-              Results
-            </NavButton>
-            <NavButton onClick={() => navigate('/dashboard')}>
-              <span className="material-symbols-outlined">dashboard</span>
-              Dashboard
-            </NavButton>
-            <NavButton onClick={() => navigate('/lodge')}>
-              <span className="material-symbols-outlined">group</span>
-              Lodge
-            </NavButton>
-          </NavButtons>
         </ContentWrapper>
       </PageContainer>
     </>

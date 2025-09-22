@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { useVote } from './VoteContext';
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -203,6 +204,55 @@ const CandidatePosition = styled.p`
   font-size: 0.9rem;
 `;
 
+const FilterContainer = styled.div`
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+const FilterLabel = styled.label`
+  color: var(--text-primary);
+  font-weight: 600;
+  white-space: nowrap;
+`;
+
+const Select = styled.select`
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  min-width: 200px;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-color);
+  }
+`;
+
+const BackButton = styled.button`
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+
+  &:hover {
+    background: var(--icon-bg);
+    border-color: var(--accent-color);
+  }
+`;
+
+// Add new styled components for the voter table
 const VotersTable = styled.table`
   width: 100%;
   border-collapse: collapse;
@@ -237,101 +287,52 @@ const TableCell = styled.td`
   border-bottom: 1px solid var(--border-color);
 `;
 
-const BackButton = styled.button`
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-pill);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-
-  &:hover {
-    background: var(--icon-bg);
-    border-color: var(--accent-color);
-  }
-`;
-
-const FilterContainer = styled.div`
-  display: flex;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-  flex-wrap: wrap;
-  align-items: center;
-`;
-
-const FilterLabel = styled.label`
-  color: var(--text-primary);
-  font-weight: 600;
-  white-space: nowrap;
-`;
-
-const Select = styled.select`
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  background: var(--card-bg);
-  color: var(--text-primary);
-  min-width: 200px;
-
-  &:focus {
-    outline: none;
-    border-color: var(--accent-color);
-  }
-`;
-
 function LodgePage() {
   const navigate = useNavigate();
-  const [candidates, setCandidates] = useState([]);
+  const { getSortedCandidatesWithVotes, getVoters, getVotersByCandidate, resetVotes } = useVote();
   const [newCandidate, setNewCandidate] = useState({ name: '', position: '' });
-  const [voters, setVoters] = useState([]);
   const [filter, setFilter] = useState('all');
 
-  // In a real application, this data would come from an API
-  useEffect(() => {
-    // Mock data for demonstration
-    const mockCandidates = [
-      { id: 1, name: 'Alex Johnson', position: 'Team Lead' },
-      { id: 2, name: 'Maria Garcia', position: 'Design Director' },
-      { id: 3, name: 'James Wilson', position: 'Tech Lead' },
-      { id: 4, name: 'Sarah Chen', position: 'Product Manager' },
-      { id: 5, name: 'David Brown', position: 'Marketing Head' }
-    ];
-    
-    const mockVoters = [
-      { id: 'P001', name: 'John Smith', email: 'john@example.com', candidateId: 1, candidateName: 'Alex Johnson' },
-      { id: 'P002', name: 'Emma Johnson', email: 'emma@example.com', candidateId: 2, candidateName: 'Maria Garcia' },
-      { id: 'P003', name: 'Michael Brown', email: 'michael@example.com', candidateId: 1, candidateName: 'Alex Johnson' },
-      { id: 'P004', name: 'Sarah Davis', email: 'sarah@example.com', candidateId: 3, candidateName: 'James Wilson' },
-      { id: 'P005', name: 'Robert Wilson', email: 'robert@example.com', candidateId: 4, candidateName: 'Sarah Chen' }
-    ];
-    
-    setCandidates(mockCandidates);
-    setVoters(mockVoters);
-  }, []);
+  // Get candidates with real vote data, sorted by votes
+  const sortedCandidates = getSortedCandidatesWithVotes();
+  
+  // Get voters based on filter
+  const filteredVoters = filter === 'all' 
+    ? getVoters() 
+    : getVotersByCandidate(parseInt(filter));
 
-  const handleAddCandidate = (e) => {
+  const handleAddCandidate = async (e) => {
     e.preventDefault();
     if (newCandidate.name && newCandidate.position) {
-      const candidate = {
-        id: candidates.length + 1,
-        name: newCandidate.name,
-        position: newCandidate.position
-      };
-      setCandidates([...candidates, candidate]);
-      setNewCandidate({ name: '', position: '' });
+      try {
+        // In a real Netlify Forms implementation, this would make an API call to add a new candidate
+        // Example: await fetch('/api/candidates', { method: 'POST', body: JSON.stringify(newCandidate) });
+        alert('In a real Netlify Forms implementation, this would add a new candidate to the system.');
+        setNewCandidate({ name: '', position: '' });
+      } catch (err) {
+        console.error('Error adding candidate:', err);
+      }
     }
   };
 
-  const handleRemoveCandidate = (id) => {
+  const handleRemoveCandidate = async (id) => {
     if (window.confirm('Are you sure you want to remove this candidate?')) {
-      setCandidates(candidates.filter(candidate => candidate.id !== id));
-      // In a real application, you would also remove votes for this candidate
+      try {
+        // In a real Netlify Forms implementation, this would make an API call to remove the candidate
+        // Example: await fetch(`/api/candidates/${id}`, { method: 'DELETE' });
+        alert('In a real Netlify Forms implementation, this would remove the candidate from the system.');
+      } catch (err) {
+        console.error('Error removing candidate:', err);
+      }
+    }
+  };
+
+  const handleResetAll = () => {
+    if (window.confirm('Are you sure you want to reset all votes? This action cannot be undone.')) {
+      // Reset all votes to zero
+      resetVotes();
+      // In a real Netlify Forms implementation, this would also clear the form data
+      alert('All votes have been reset to zero in a real implementation');
     }
   };
 
@@ -378,11 +379,12 @@ function LodgePage() {
           <SectionCard>
             <SectionTitle>Current Candidates</SectionTitle>
             <CandidatesList>
-              {candidates.map(candidate => (
+              {sortedCandidates.map(candidate => (
                 <CandidateItem key={candidate.id}>
                   <CandidateInfo>
                     <CandidateName>{candidate.name}</CandidateName>
                     <CandidatePosition>{candidate.position}</CandidatePosition>
+                    <p>Votes: {candidate.votes}</p>
                   </CandidateInfo>
                   <Button 
                     danger 
@@ -406,13 +408,23 @@ function LodgePage() {
                 onChange={(e) => setFilter(e.target.value)}
               >
                 <option value="all">All Candidates</option>
-                {candidates.map(candidate => (
+                {sortedCandidates.map(candidate => (
                   <option key={candidate.id} value={candidate.id}>
-                    {candidate.name}
+                    {candidate.name} ({candidate.votes} votes)
                   </option>
                 ))}
               </Select>
             </FilterContainer>
+            
+            <Button 
+              danger 
+              onClick={handleResetAll}
+              style={{ marginTop: '16px' }}
+            >
+              <span className="material-symbols-outlined">restart_alt</span>
+              Reset All Votes
+            </Button>
+            
             <VotersTable>
               <TableHead>
                 <tr>
@@ -420,19 +432,31 @@ function LodgePage() {
                   <TableHeader>Voter Name</TableHeader>
                   <TableHeader>Email</TableHeader>
                   <TableHeader>Awarded To</TableHeader>
+                  <TableHeader>Vote Time</TableHeader>
                 </tr>
               </TableHead>
               <tbody>
-                {voters
-                  .filter(voter => filter === 'all' || voter.candidateId === parseInt(filter))
-                  .map(voter => (
-                    <TableRow key={voter.id}>
+                {filteredVoters.length > 0 ? (
+                  filteredVoters.map((voter, index) => (
+                    <TableRow key={index}>
                       <TableCell>{voter.id}</TableCell>
                       <TableCell>{voter.name}</TableCell>
                       <TableCell>{voter.email}</TableCell>
-                      <TableCell>{voter.candidateName}</TableCell>
+                      <TableCell>
+                        {Array.isArray(voter.candidateNames) 
+                          ? voter.candidateNames.join(', ') 
+                          : voter.candidateName}
+                      </TableCell>
+                      <TableCell>{voter.voteTime}</TableCell>
                     </TableRow>
-                  ))}
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan="5" style={{ textAlign: 'center' }}>
+                      No votes recorded for this candidate yet.
+                    </TableCell>
+                  </TableRow>
+                )}
               </tbody>
             </VotersTable>
           </SectionCard>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { useVote } from './VoteContext';
 
 // Global styles
 const GlobalStyle = createGlobalStyle`
@@ -252,20 +253,12 @@ const SelectionCounter = styled.div`
 
 function VotingPage() {
   const navigate = useNavigate();
+  const { vote, candidates } = useVote();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     candidates: [] // Changed from single candidate to array
   });
-
-  // Sample candidates data
-  const candidates = [
-    { id: 1, name: "Alex Johnson", position: "Team Lead" },
-    { id: 2, name: "Maria Garcia", position: "Design Director" },
-    { id: 3, name: "James Wilson", position: "Tech Lead" },
-    { id: 4, name: "Sarah Chen", position: "Product Manager" },
-    { id: 5, name: "David Brown", position: "Marketing Head" }
-  ];
 
   const MAX_SELECTIONS = 5;
 
@@ -301,7 +294,7 @@ function VotingPage() {
     });
   };
 
-  const handleVote = (e) => {
+  const handleVote = async (e) => {
     e.preventDefault();
     
     if (formData.name && formData.email && formData.candidates.length > 0) {
@@ -311,14 +304,22 @@ function VotingPage() {
       // Get selected candidate names for display
       const selectedCandidates = candidates.filter(c => formData.candidates.includes(c.id));
       
-      // In a real application with Netlify Forms, the form would be submitted
-      // and Netlify would handle the data storage
-      console.log('Vote submitted:', { 
-        voterId, 
-        voterName: formData.name, 
-        voterEmail: formData.email, 
-        selectedCandidates: selectedCandidates.map(c => `${c.name} - ${c.position}`)
-      });
+      // Prepare voter information
+      const voterInfo = {
+        id: voterId,
+        name: formData.name,
+        email: formData.email,
+        candidateIds: formData.candidates,
+        candidateNames: selectedCandidates.map(c => `${c.name} - ${c.position}`),
+        voteTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
+      };
+      
+      // Record the votes in our local state with voter information
+      vote(voterInfo, formData.candidates);
+      
+      // In a real Netlify Forms implementation, the form would be submitted
+      // and Netlify would handle the data storage automatically
+      // The form submission is handled by Netlify's built-in form handling
       
       // Show confirmation and redirect to results
       alert(`Thank you ${formData.name} (ID: ${voterId}) for awarding your Impact Token to ${selectedCandidates.length} candidate(s)!`);
