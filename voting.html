@@ -489,27 +489,31 @@
             }
 
             // Prepare form data
-            const formData = new FormData();
-            formData.append('firstName', firstName);
-            formData.append('lastName', lastName);
-            formData.append('email', email);
-            formData.append('timestamp', new Date().toISOString());
-            
-            // Add candidates data
-            window.selectedCandidates.forEach((candidate, index) => {
-                formData.append(`candidates[${index}][id]`, candidate.id);
-                formData.append(`candidates[${index}][name]`, candidate.name);
-                formData.append(`candidates[${index}][project]`, candidate.project || '');
-            });
+            const voteData = {
+                firstName,
+                lastName,
+                email,
+                timestamp: new Date().toISOString(),
+                candidates: window.selectedCandidates.map(candidate => ({
+                    id: candidate.id,
+                    name: candidate.name,
+                    project: candidate.project || ''
+                }))
+            };
 
-            // Submit to server
+            // Show loading state
+            const submitBtn = document.querySelector('#voting-form button[type="submit"]');
+            const originalBtnText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
             try {
-                const response = await fetch('/submit-vote', {
+                const response = await fetch('/.netlify/functions/submit-vote', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Content-Type': 'application/json',
                     },
-                    body: new URLSearchParams(formData)
+                    body: JSON.stringify(voteData)
                 });
                 
                 const result = await response.json();
@@ -545,10 +549,14 @@
                     window.location.href = result.redirect || '/thank-you.html';
                 } else {
                     alert(result.message || 'Failed to submit your vote. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
                 }
             } catch (error) {
                 console.error('Error submitting vote:', error);
                 alert('An error occurred while submitting your vote. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
             }
         });
 

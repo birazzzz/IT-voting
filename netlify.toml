@@ -1,23 +1,34 @@
 [build]
-  # Use the build script
-  command = "./build.sh"
-  
-  # Publish from the build directory
-  publish = "build"
-  
-  # Base directory
-  base = "."
+  # Publish from the root directory
+  publish = "/"
+  functions = "netlify/functions"
+  command = ""
 
 # Environment settings
 [build.environment]
   NODE_VERSION = "18"
 
-# Disable unnecessary processing
-[build.processing]
-  skip_processing = false
+# Handle form submissions
+[[redirects]]
+  from = "/submit-vote"
+  to = "/.netlify/functions/submit-vote"
+  status = 200
+  force = true
 
-[build.processing.html]
-  pretty_urls = true
+# Handle SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "same-origin"
   
 [build.processing.images]
   compress = true

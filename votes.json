@@ -1,3 +1,16 @@
 {
-  "voters": {}
+  "voters": {
+    "::1": {
+      "timestamp": "2025-10-08T11:15:09.108Z",
+      "firstName": "Parbati",
+      "lastName": "Sharma",
+      "email": "paudelparbati402@gmail.com",
+      "candidates[0][id]": "1",
+      "candidates[0][name]": "Sarah Chen",
+      "candidates[0][project]": "AI-Powered Analytics Dashboard",
+      "candidates[1][id]": "2",
+      "candidates[1][name]": "Marcus Johnson",
+      "candidates[1][project]": "Sustainable Energy Management System"
+    }
+  }
 }
