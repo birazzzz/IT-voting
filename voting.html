@@ -580,11 +580,11 @@
             // Store a flag in localStorage to indicate successful submission
             localStorage.setItem('formSubmitted', 'true');
             
-            // Allow Netlify to process the form submission naturally
-            // Then redirect to thank you page after a short delay
+            // Allow Netlify to process the form submission
+            // Redirect after a short delay to ensure Netlify processes the data
             setTimeout(() => {
                 window.location.href = 'thank-you.html';
-            }, 1000); // Give Netlify time to process the form
+            }, 2000); // 2 second delay as per best practices
         });
 
         // Initialize when page loads

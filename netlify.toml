@@ -1,5 +1,5 @@
 [build]
-  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg qr.png thank-you.html Toshiba-teka.png votes.json voting.html public build/"
+  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg thank-you.html Toshiba-teka.png votes.json voting.html public/qr.png build/ && cp public/* build/"
   publish = "build"
 
 # Basic SPA routing
@@ -17,5 +17,5 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Remove explicit form configuration to allow native Netlify form detection
-# Netlify will automatically detect forms with data-netlify="true"
+# Removed explicit form configuration to allow Netlify's automatic form detection
+# Netlify Forms will automatically detect the form with name="voting" and data-netlify="true"
