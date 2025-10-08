@@ -3,9 +3,6 @@
   command = "echo 'No build process needed for static site'"
   publish = "."
 
-  # Disable all build processing
-  ignore = "/bin/false"
-
 # Basic SPA routing
 [[redirects]]
   from = "/*"
