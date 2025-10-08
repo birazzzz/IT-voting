@@ -1,0 +1,28 @@
+# Netlify headers for optimal performance
+/*
+// Cache static assets for 1 hour
+  Cache-Control: public, max-age=3600
+
+// Security headers
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# HTML files - no cache to ensure updates are seen immediately
+*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Images - cache for 24 hours
+*.png
+  Cache-Control: public, max-age=86400
+
+*.svg
+  Cache-Control: public, max-age=86400
+
+# JavaScript and CSS - cache for 1 hour
+*.js
+  Cache-Control: public, max-age=3600
+
+*.css
+  Cache-Control: public, max-age=3600
