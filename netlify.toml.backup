@@ -1,0 +1,78 @@
+# Netlify Configuration for Static Site
+[build]
+  # Base directory (root of the repository)
+  base = "."
+  
+  # Publish directory (current directory, no build needed)
+  publish = "."
+  
+  # Create a minimal build command that does nothing but succeed
+  command = "echo 'No build step required for static site' && mkdir -p ."
+
+# Environment settings
+[build.environment]
+  # Disable build plugins that might interfere
+  NETLIFY_USE_YARN = "false"
+  
+  # No need for these, but set to prevent auto-detection
+  NPM_FLAGS = "--no-optional"
+  
+# Disable all processing
+[build.processing]
+  skip_processing = true
+  
+  [build.processing.html]
+    pretty_urls = true
+    
+  [build.processing.images]
+    compress = true
+    
+  [build.processing.css]
+    bundle = false
+    minify = false
+    
+  [build.processing.js]
+    bundle = false
+    minify = false
+
+# Explicitly set as a static site with no build process
+[context.production]
+  command = ""
+  publish = "."
+  
+[context.deploy-preview]
+  command = ""
+  publish = "."
+  
+[context.branch-deploy]
+  command = ""
+  publish = "."
+
+[[redirects]]
+  from = "/voting.html"
+  to = "/voting.html"
+  status = 200
+
+[[redirects]]
+  from = "/leaderboard.html"
+  to = "/leaderboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin.html"
+  to = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/thank-you.html"
+  to = "/thank-you.html"
+  status = 200
+
+# Form configuration for voting form
+[forms."voting"]
+  fields = [
+    "firstName",
+    "lastName",
+    "email",
+    "totalCandidates"
+  ]

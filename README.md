@@ -35,19 +35,19 @@ node server-local.js
 3. Open `http://localhost:4000` in your browser
 
 ## Netlify Deployment
-
 This project is configured for automatic deployment on Netlify:
 
 1. **Connect Repository** - Link your GitHub repository to Netlify
 2. **Auto-deploy** - Netlify will build and deploy automatically
 3. **Forms Active** - Vote submissions will appear in your Netlify dashboard
 4. **Live URL** - Your site will be available at `https://your-site.netlify.app`
+5. **Dashboard:** `https://your-site.netlify.app/dashboard.html` - Analytics and voting activity overview
 
 ### Netlify Configuration
 
 The `netlify.toml` file includes:
 - Static site build settings
-- URL redirects for all pages
+{{ ... }}
 - Form configuration for vote submissions
 - No build process required (pure static files)
 
@@ -66,18 +66,18 @@ The `netlify.toml` file includes:
 - **Forms**: Netlify Forms
 - **Storage**: localStorage (client-side persistence)
 
-## File Structure
 
 ```
 ├── index.html          # Home page
 ├── voting.html         # Voting interface
 ├── leaderboard.html    # Rankings display
-├── admin.html          # Management panel
+├── dashboard.html          # Analytics dashboard *(new)*
+├── admin.html              # Management panel
 ├── thank-you.html      # Success page
 ├── server-local.js         # Local development server *(renamed)*
 ├── netlify.toml            # Deployment configuration
 ├── _redirects          # URL routing
 ├── Toshiba-teka.png    # Logo image
-└── logo.svg           # SVG logo
+{{ ... }}
 
 For issues or questions, please check the GitHub repository or Netlify dashboard for form submissions.
