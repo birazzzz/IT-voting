@@ -323,7 +323,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="email">Email Address:</label>
-                        <input type="email" id="email" name="email" required style="width: calc(50% - 8px);">
+                        <input type="email" id="email" name="email" required>
                     </div>
                 </div>
             </div>
@@ -344,7 +344,7 @@
                 <div id="hidden-fields" style="display: none;">
                     <!-- These will be populated by JavaScript before form submission -->
                 </div>
-                <button type="button" class="submit-btn" id="submit-btn" onclick="submitVote()">Give Impact Token</button>
+                <button type="submit" class="submit-btn" id="submit-btn">Give Impact Token</button>
             </div>
         </form>
     </div>
@@ -481,13 +481,14 @@
             submitBtn.disabled = window.selectedCandidates.length === 0;
         }
 
-        // Submit vote function - handles Netlify form submission
-        function submitVote() {
+        // Handle form submission
+        document.getElementById('voting-form').addEventListener('submit', function(e) {
             const firstName = document.getElementById('first-name').value;
             const lastName = document.getElementById('last-name').value;
             const email = document.getElementById('email').value;
 
             if (window.selectedCandidates.length === 0) {
+                e.preventDefault();
                 alert('Please select at least one team member to award Impact Tokens.');
                 return;
             }
@@ -544,26 +545,10 @@
 
             // Show success message
             alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
-
-            // Submit form to Netlify and redirect to leaderboard
-            const form = document.getElementById('voting-form');
-            const formData = new FormData(form);
-
-            fetch('/', {
-                method: 'POST',
-                body: formData
-            }).then(response => {
-                if (response.ok) {
-                    // Redirect to leaderboard after successful submission
-                    window.location.href = 'leaderboard.html';
-                } else {
-                    alert('Error submitting form. Please try again.');
-                }
-            }).catch(error => {
-                console.error('Form submission error:', error);
-                alert('Error submitting form. Please try again.');
-            });
-        }
+            
+            // Let the form submit naturally to Netlify
+            // The success page is handled by Netlify's form settings
+        });
 
         // Initialize when page loads
         window.onload = init;
