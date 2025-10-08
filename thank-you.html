@@ -92,9 +92,19 @@
         <p class="subtitle">
             Your Impact Tokens have been successfully awarded! Your recognition helps celebrate the great work being done by your team members.
         </p>
+        <p style="margin-top: 20px; color: var(--text2);">
+            Redirecting to leaderboard...
+        </p>
         <a href="leaderboard.html" class="cta-button">
             View Leaderboard
         </a>
     </div>
+    
+    <script>
+        // Redirect to leaderboard after 2 seconds
+        setTimeout(function() {
+            window.location.href = 'leaderboard.html';
+        }, 2000);
+    </script>
 </body>
 </html>

@@ -170,6 +170,7 @@
                 width: 160px;
                 height: 160px;
             }
+        }
     </style>
 </head>
 <body>
@@ -182,9 +183,8 @@
         <p class="subtitle">Scan the QR code below to participate in voting for projects and team members</p>
 
         <div class="qr-section">
-            <div class="qr-code" onclick="goToVoting()">
-                📱<br>
-                Tap to Vote
+            <div class="qr-code" onclick="goToVoting()" id="qr-code-container">
+                <img src="qr.png" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain; border-radius: var(--r-xl);">
             </div>
         </div>
 
