@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         :root {
             /* Design Guidelines Color Palette */
@@ -493,56 +494,100 @@
         // Add new candidate
         function addCandidate(candidate) {
             const candidates = loadCandidates();
-            const newId = Math.max(...candidates.map(c => c.id), 0) + 1;
+            const newId = candidates.length > 0 ? Math.max(...candidates.map(c => c.id), 0) + 1 : 1;
+            
+            // Validate input
+            if (!candidate.name || !candidate.project) {
+                showMessage('error', 'Please fill in all fields');
+                return false;
+            }
+            
+            // Check for duplicate
+            const exists = candidates.some(c => 
+                c.name.toLowerCase() === candidate.name.toLowerCase() && 
+                c.project.toLowerCase() === candidate.project.toLowerCase()
+            );
+            
+            if (exists) {
+                showMessage('error', 'A candidate with this name and project already exists');
+                return false;
+            }
+            
             const newCandidate = {
                 id: newId,
-                name: candidate.name,
-                project: candidate.project
+                name: candidate.name.trim(),
+                project: candidate.project.trim(),
+                votes: 0,  // Initialize vote count
+                createdAt: new Date().toISOString()
             };
 
             candidates.push(newCandidate);
             saveCandidates(candidates);
+            
+            // Also update the voting page data
+            const votingCandidates = JSON.parse(localStorage.getItem('votingCandidates') || '[]');
+            votingCandidates.push(newCandidate);
+            localStorage.setItem('votingCandidates', JSON.stringify(votingCandidates));
+            
             renderCandidates();
             resetForm();
             showMessage('success', `Added "${candidate.name}" successfully!`);
+            return true;
         }
 
         // Remove candidate
         function removeCandidate(id) {
-            if (confirm('Are you sure you want to remove this candidate? This action cannot be undone.')) {
-                const candidates = loadCandidates();
-                const filteredCandidates = candidates.filter(c => c.id !== id);
-                saveCandidates(filteredCandidates);
-                renderCandidates();
-                showMessage('success', 'Candidate removed successfully!');
+            if (!confirm('Are you sure you want to remove this candidate? This action cannot be undone.')) {
+                return;
             }
+            
+            let candidates = loadCandidates();
+            const candidateToRemove = candidates.find(c => c.id === id);
+            
+            if (!candidateToRemove) {
+                showMessage('error', 'Candidate not found');
+                return;
+            }
+            
+            // Remove the candidate
+            candidates = candidates.filter(c => c.id !== id);
+            saveCandidates(candidates);
+            
+            // Also update the voting page data
+            const votingCandidates = JSON.parse(localStorage.getItem('votingCandidates') || '[]');
+            const updatedVotingCandidates = votingCandidates.filter(c => c.id !== id);
+            localStorage.setItem('votingCandidates', JSON.stringify(updatedVotingCandidates));
+            
+            renderCandidates();
+            showMessage('success', `Removed "${candidateToRemove.name}" successfully!`);
         }
 
         // Render candidates
         function renderCandidates() {
             const candidates = loadCandidates();
-            const grid = document.getElementById('candidatesGrid');
-            const count = document.getElementById('candidateCount');
-
-            count.textContent = candidates.length;
-
+            const container = document.getElementById('candidatesGrid');
+            
+            // Update the count display
+            document.getElementById('candidateCount').textContent = candidates.length;
+            
             if (candidates.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; color: var(--text2); padding: var(--xl);">No candidates found.</p>';
+                container.innerHTML = '<p class="no-candidates">No candidates added yet. Add your first candidate using the form above.</p>';
                 return;
             }
 
-            grid.innerHTML = candidates.map(candidate => `
-                <div class="candidate-card">
-                    <div class="candidate-header">
-                        <div>
-                            <div class="candidate-name">${candidate.name}</div>
-                            <div class="candidate-project">${candidate.project}</div>
+            container.innerHTML = candidates.map(candidate => `
+                <div class="candidate-item">
+                    <div class="candidate-info">
+                        <h3>${candidate.name}</h3>
+                        <p class="project">${candidate.project}</p>
+                        <div class="candidate-meta">
+                            <span class="candidate-id">ID: ${candidate.id}</span>
+                            <span class="candidate-votes">Votes: ${candidate.votes || 0}</span>
+                            <span class="candidate-added">Added: ${new Date(candidate.createdAt || new Date()).toLocaleDateString()}</span>
                         </div>
-                        <div class="candidate-id">ID: ${candidate.id}</div>
                     </div>
-
                     <div class="candidate-actions">
-                        <button class="btn btn-danger btn-small" onclick="removeCandidate(${candidate.id})">
+                        <button class="btn btn-danger" onclick="removeCandidate(${candidate.id})" title="Remove candidate">
                             🗑️ Remove
                         </button>
                     </div>
@@ -553,28 +598,41 @@
         // Form submission
         document.getElementById('addCandidateForm').addEventListener('submit', function(e) {
             e.preventDefault();
-
-            const name = document.getElementById('candidateName').value.trim();
-            const project = document.getElementById('candidateProject').value.trim();
-            const description = document.getElementById('candidateDescription').value.trim();
-
-            if (!name || !project) {
-                showMessage('error', 'Please fill in all required fields.');
-                return;
+            
+            const nameInput = document.getElementById('candidateName');
+            const projectInput = document.getElementById('candidateProject');
+            
+            const candidate = {
+                name: nameInput.value.trim(),
+                project: projectInput.value.trim()
+            };
+            
+            if (addCandidate(candidate)) {
+                // Reset form on success
+                this.reset();
+                // Set focus back to name field for better UX
+                nameInput.focus();
             }
-
-            addCandidate({ name, project });
         });
 
         // Initialize
         function init() {
-            // Initialize candidates data if it doesn't exist
-            const existing = localStorage.getItem('candidates');
-            if (!existing) {
-                saveCandidates(defaultCandidates);
+            // Initialize with default candidates if none exist
+            const candidates = loadCandidates();
+            if (candidates.length === 0) {
+                // Add default candidates with timestamps
+                const defaultCandidatesWithTimestamps = defaultCandidates.map(c => ({
+                    ...c,
+                    votes: 0,
+                    createdAt: new Date().toISOString()
+                }));
+                saveCandidates(defaultCandidatesWithTimestamps);
             }
-
+            
             renderCandidates();
+            
+            // Set focus to the name field for better UX
+            document.getElementById('candidateName').focus();
 
             // Also sync with voting page data if it exists
             const votingCandidates = localStorage.getItem('votingCandidates');
