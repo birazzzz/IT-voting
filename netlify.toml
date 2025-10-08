@@ -1,53 +1,28 @@
-# Netlify Configuration for Static Site
 [build]
-  # Base directory (root of the repository)
+  # Use the build script
+  command = "./build.sh"
+  
+  # Publish from the build directory
+  publish = "build"
+  
+  # Base directory
   base = "."
-  
-  # Publish directory (current directory, no build needed)
-  publish = "."
-  
-  # Create a minimal build command that does nothing but succeed
-  command = "echo 'No build step required for static site' && mkdir -p ."
 
 # Environment settings
 [build.environment]
-  # Disable build plugins that might interfere
-  NETLIFY_USE_YARN = "false"
-  
-  # No need for these, but set to prevent auto-detection
-  NPM_FLAGS = "--no-optional"
-  
-# Disable all processing
+  NODE_VERSION = "18"
+
+# Disable unnecessary processing
 [build.processing]
-  skip_processing = true
-  
-  [build.processing.html]
-    pretty_urls = true
-    
-  [build.processing.images]
-    compress = true
-    
-  [build.processing.css]
-    bundle = false
-    minify = false
-    
-  [build.processing.js]
-    bundle = false
-    minify = false
+  skip_processing = false
 
-# Explicitly set as a static site with no build process
-[context.production]
-  command = ""
-  publish = "."
+[build.processing.html]
+  pretty_urls = true
   
-[context.deploy-preview]
-  command = ""
-  publish = "."
-  
-[context.branch-deploy]
-  command = ""
-  publish = "."
+[build.processing.images]
+  compress = true
 
+# Redirects
 [[redirects]]
   from = "/voting.html"
   to = "/voting.html"
@@ -63,16 +38,11 @@
   to = "/admin.html"
   status = 200
 
-[[redirects]]
-  from = "/thank-you.html"
-  to = "/thank-you.html"
-  status = 200
-
-# Form configuration for voting form
+# Form configuration
 [forms."voting"]
   fields = [
     "firstName",
-    "lastName",
+    "lastName", 
     "email",
     "totalCandidates"
   ]
