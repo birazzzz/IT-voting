@@ -3,8 +3,5 @@
 /leaderboard.html  /leaderboard.html  200
 /admin.html    /admin.html    200
 
-# Handle form submissions
-/api/submit    https://submit-form.com    200
-
 # SPA fallback for client-side routing
 /*  /index.html  200
