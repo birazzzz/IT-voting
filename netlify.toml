@@ -2,8 +2,8 @@
   publish = "."
   command = "echo 'Static site - no build required'"
 
-[build.environment]
-  NODE_VERSION = "18"
+# No Node.js environment needed for static site
+# NODE_VERSION removed as it's not required
 
 [[redirects]]
   from = "/voting.html"
@@ -25,7 +25,7 @@
   to = "/thank-you.html"
   status = 200
 
-# Form configuration
+# Form configuration for voting form
 [forms."voting"]
   fields = [
     "firstName",
