@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 4000;
+const PORT = 3000;
 
 // Read the index.html file once at startup
 const indexHtml = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
@@ -84,6 +84,7 @@ server.listen(PORT, () => {
   console.log(`   Leaderboard: http://localhost:${PORT}/leaderboard.html`);
   console.log(`   Admin:      http://localhost:${PORT}/admin.html`);
   console.log(`   Thank You:  http://localhost:${PORT}/thank-you.html`);
+  console.log(`   Dashboard:  http://localhost:${PORT}/dashboard.html`);
   console.log('');
   console.log('🚀 Netlify Form Ready:');
   console.log('   - Form submissions will be sent to Netlify');
@@ -95,6 +96,6 @@ server.listen(PORT, () => {
   console.log('   2. Home → Click "Tap to Vote"');
   console.log('   3. Fill form → Select candidates → Click "Give Impact Token"');
   console.log('   4. Form data sent to Netlify + localStorage updated');
-  console.log('   5. Auto-redirect to leaderboard: http://localhost:4000/leaderboard.html');
+  console.log('   5. Auto-redirect to leaderboard: http://localhost:3000/leaderboard.html');
   console.log('   6. View live rankings → Vote again if needed');
 });
