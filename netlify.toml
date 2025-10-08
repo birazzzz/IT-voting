@@ -49,7 +49,7 @@
 [forms."voting"]
   fields = [
     "firstName",
-    "lastName", 
+    "lastName",
     "email",
     "totalCandidates"
   ]
