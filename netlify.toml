@@ -1,7 +1,6 @@
 [build]
-  # Static site - no build process needed
-  command = "echo 'No build process needed for static site'"
-  publish = "."
+  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg thank-you.html Toshiba-teka.png votes.json voting.html public build/"
+  publish = "build"
 
 # Basic SPA routing
 [[redirects]]
