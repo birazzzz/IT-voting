@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Impact Token Voting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Design Guidelines Color Palette */
+            --bg: #edeae7;
+            --card: #ffffff;
+            --border: #dedede;
+            --hover: #81EDFF;
+            --text: #222222;
+            --text2: #666666;
+            --accent: #81EDFF;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --xs: 4px;
+            --sm: 8px;
+            --md: 16px;
+            --lg: 24px;
+            --xl: 32px;
+            --xxl: 40px;
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 24px;
+            --r-pill: 999px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,.1);
+            --fast: .2s ease;
+            --med: .3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            padding: var(--md);
+        }
+
+        .container {
+            background: var(--card);
+            border-radius: var(--r-xl);
+            box-shadow: var(--shadow-lg);
+            padding: var(--xxl);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--xxl);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: var(--xl);
+        }
+
+        .title {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: var(--sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--sm);
+        }
+
+        .subtitle {
+            color: var(--text2);
+            font-size: 1rem;
+            margin-bottom: var(--md);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--md);
+            justify-content: center;
+            margin-top: var(--lg);
+        }
+
+        .nav-link {
+            background: var(--accent);
+            color: var(--text);
+            text-decoration: none;
+            padding: var(--sm) var(--md);
+            border-radius: var(--r-sm);
+            font-weight: 600;
+            transition: var(--fast);
+        }
+
+        .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            border: 2px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: var(--xl);
+            margin-bottom: var(--xl);
+        }
+
+        .form-section h2 {
+            color: var(--text);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: var(--lg);
+            display: flex;
+            align-items: center;
+            gap: var(--sm);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--lg);
+            margin-bottom: var(--lg);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: var(--xs);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: var(--sm) var(--md);
+            border: 2px solid var(--border);
+            border-radius: var(--r-sm);
+            font-family: 'Manrope', sans-serif;
+            font-size: 1rem;
+            transition: var(--fast);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--md);
+            justify-content: flex-end;
+            margin-top: var(--lg);
+        }
+
+        .btn {
+            padding: var(--sm) var(--lg);
+            border: none;
+            border-radius: var(--r-sm);
+            cursor: pointer;
+            font-family: 'Manrope', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: var(--fast);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--xs);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--text);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--text2);
+            color: var(--card);
+        }
+
+        .btn-secondary:hover {
+            background: var(--text);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .candidates-section {
+            margin-top: var(--xl);
+        }
+
+        .candidates-section h2 {
+            color: var(--text);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: var(--lg);
+        }
+
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--lg);
+            margin-bottom: var(--xl);
+        }
+
+        .candidate-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: var(--lg);
+            transition: var(--fast);
+        }
+
+        .candidate-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: var(--md);
+        }
+
+        .candidate-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: var(--xs);
+        }
+
+        .candidate-project {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: var(--sm);
+        }
+
+        .candidate-description {
+            color: var(--text2);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: var(--md);
+        }
+
+        .candidate-id {
+            background: var(--accent);
+            color: var(--text);
+            padding: var(--xs) var(--sm);
+            border-radius: var(--r-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .candidate-actions {
+            display: flex;
+            gap: var(--sm);
+            margin-top: var(--md);
+        }
+
+        .btn-small {
+            padding: var(--xs) var(--sm);
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: var(--r-sm);
+            padding: var(--md);
+            margin-bottom: var(--lg);
+            display: none;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: var(--r-sm);
+            padding: var(--md);
+            margin-bottom: var(--lg);
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--md);
+                margin: var(--sm);
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .candidates-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">
+                ⚙️ Admin Panel
+            </h1>
+            <p class="subtitle">Manage Impact Token Voting Candidates</p>
+
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">🏠 Home</a>
+                <a href="voting.html" class="nav-link">🗳️ Voting</a>
+                <a href="leaderboard.html" class="nav-link">🏆 Leaderboard</a>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <strong>Success!</strong> <span id="successText"></span>
+        </div>
+
+        <div class="error-message" id="errorMessage">
+            <strong>Error!</strong> <span id="errorText"></span>
+        </div>
+
+        <div class="form-section">
+            <h2>➕ Add New Candidate</h2>
+
+            <form id="addCandidateForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="candidateName">Full Name *</label>
+                        <input type="text" id="candidateName" required placeholder="e.g., Sarah Chen">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="candidateProject">Project Name *</label>
+                        <input type="text" id="candidateProject" required placeholder="e.g., AI-Powered Analytics Dashboard">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear</button>
+                    <button type="submit" class="btn btn-primary">Add Candidate</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="candidates-section">
+            <h2>👥 Current Candidates (<span id="candidateCount">0</span>)</h2>
+
+            <div class="candidates-grid" id="candidatesGrid">
+                <!-- Candidates will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default candidates data
+        const defaultCandidates = [
+            {
+                id: 1,
+                name: "Sarah Chen",
+                project: "AI-Powered Analytics Dashboard"
+            },
+            {
+                id: 2,
+                name: "Marcus Johnson",
+                project: "Sustainable Energy Management System"
+            },
+            {
+                id: 3,
+                name: "Priya Patel",
+                project: "Global Supply Chain Optimization"
+            },
+            {
+                id: 4,
+                name: "David Kim",
+                project: "Cybersecurity Threat Detection Platform"
+            },
+            {
+                id: 5,
+                name: "Elena Rodriguez",
+                project: "Customer Experience Enhancement Initiative"
+            },
+            {
+                id: 6,
+                name: "Ahmed Hassan",
+                project: "Mobile Banking Security Framework"
+            },
+            {
+                id: 7,
+                name: "Lisa Wong",
+                project: "Healthcare Data Integration Platform"
+            },
+            {
+                id: 8,
+                name: "James Mitchell",
+                project: "Autonomous Vehicle Safety Systems"
+            },
+            {
+                id: 9,
+                name: "Nina Thompson",
+                project: "Smart City Infrastructure Management"
+            },
+            {
+                id: 10,
+                name: "Robert Chang",
+                project: "Blockchain Supply Chain Transparency"
+            }
+        ];
+
+        // Load candidates from localStorage or use defaults
+        function loadCandidates() {
+            const saved = localStorage.getItem('candidates');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error loading candidates:', e);
+                    return defaultCandidates;
+                }
+            }
+            return defaultCandidates;
+        }
+
+        // Save candidates to localStorage
+        function saveCandidates(candidates) {
+            localStorage.setItem('candidates', JSON.stringify(candidates));
+            // Also update the voting page data
+            localStorage.setItem('votingCandidates', JSON.stringify(candidates));
+        }
+
+        // Show message
+        function showMessage(type, text) {
+            const messageEl = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
+            const textEl = document.getElementById(type === 'success' ? 'successText' : 'errorText');
+
+            textEl.textContent = text;
+            messageEl.style.display = 'block';
+
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('addCandidateForm').reset();
+        }
+
+        // Add new candidate
+        function addCandidate(candidate) {
+            const candidates = loadCandidates();
+            const newId = Math.max(...candidates.map(c => c.id), 0) + 1;
+            const newCandidate = {
+                id: newId,
+                name: candidate.name,
+                project: candidate.project
+            };
+
+            candidates.push(newCandidate);
+            saveCandidates(candidates);
+            renderCandidates();
+            resetForm();
+            showMessage('success', `Added "${candidate.name}" successfully!`);
+        }
+
+        // Remove candidate
+        function removeCandidate(id) {
+            if (confirm('Are you sure you want to remove this candidate? This action cannot be undone.')) {
+                const candidates = loadCandidates();
+                const filteredCandidates = candidates.filter(c => c.id !== id);
+                saveCandidates(filteredCandidates);
+                renderCandidates();
+                showMessage('success', 'Candidate removed successfully!');
+            }
+        }
+
+        // Render candidates
+        function renderCandidates() {
+            const candidates = loadCandidates();
+            const grid = document.getElementById('candidatesGrid');
+            const count = document.getElementById('candidateCount');
+
+            count.textContent = candidates.length;
+
+            if (candidates.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; color: var(--text2); padding: var(--xl);">No candidates found.</p>';
+                return;
+            }
+
+            grid.innerHTML = candidates.map(candidate => `
+                <div class="candidate-card">
+                    <div class="candidate-header">
+                        <div>
+                            <div class="candidate-name">${candidate.name}</div>
+                            <div class="candidate-project">${candidate.project}</div>
+                        </div>
+                        <div class="candidate-id">ID: ${candidate.id}</div>
+                    </div>
+
+                    <div class="candidate-actions">
+                        <button class="btn btn-danger btn-small" onclick="removeCandidate(${candidate.id})">
+                            🗑️ Remove
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Form submission
+        document.getElementById('addCandidateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('candidateName').value.trim();
+            const project = document.getElementById('candidateProject').value.trim();
+            const description = document.getElementById('candidateDescription').value.trim();
+
+            if (!name || !project) {
+                showMessage('error', 'Please fill in all required fields.');
+                return;
+            }
+
+            addCandidate({ name, project });
+        });
+
+        // Initialize
+        function init() {
+            // Initialize candidates data if it doesn't exist
+            const existing = localStorage.getItem('candidates');
+            if (!existing) {
+                saveCandidates(defaultCandidates);
+            }
+
+            renderCandidates();
+
+            // Also sync with voting page data if it exists
+            const votingCandidates = localStorage.getItem('votingCandidates');
+            if (!votingCandidates) {
+                localStorage.setItem('votingCandidates', JSON.stringify(defaultCandidates));
+            }
+        }
+
+        // Initialize when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>

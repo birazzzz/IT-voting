@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Impact Token (IT) Voting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Design Guidelines Color Palette */
+            --bg: #edeae7;
+            --card: #ffffff;
+            --border: #dedede;
+            --hover: #81EDFF;
+            --text: #222222;
+            --text2: #666666;
+            --accent: #81EDFF;
+            --xs: 4px;
+            --sm: 8px;
+            --md: 16px;
+            --lg: 24px;
+            --xl: 32px;
+            --xxl: 40px;
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 24px;
+            --r-pill: 999px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,.1);
+            --fast: .2s ease;
+            --med: .3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--md);
+        }
+
+        .container {
+            background: var(--card);
+            border-radius: var(--r-xl);
+            box-shadow: var(--shadow-lg);
+            padding: var(--xxl);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--xxl);
+        }
+
+        .title {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: var(--sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--sm);
+        }
+
+        .subtitle {
+            color: var(--text2);
+            font-size: 1.1rem;
+            margin-bottom: var(--xl);
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--xs);
+            background: #e8f5e8;
+            color: #28a745;
+            padding: var(--xs) var(--sm);
+            border-radius: var(--r-pill);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: var(--md);
+        }
+
+        .leaderboard {
+            margin-bottom: var(--xl);
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            background: var(--card);
+            border-radius: var(--r-lg);
+            padding: var(--lg);
+            margin-bottom: var(--md);
+            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--border);
+            transition: var(--fast);
+        }
+
+        .leaderboard-item:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .rank {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-right: var(--lg);
+            flex-shrink: 0;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #8B4513;
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
+            color: #2F4F4F;
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #CD7F32, #B87333);
+            color: #8B4513;
+        }
+
+        .rank-other {
+            background: var(--accent);
+            color: var(--text);
+        }
+
+        .participant-info {
+            flex: 1;
+        }
+
+        .participant-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: var(--xs);
+        }
+
+        .participant-project {
+            color: var(--text2);
+            font-size: 0.95rem;
+            margin-bottom: var(--sm);
+        }
+
+        .participant-description {
+            color: var(--text2);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-clamp: 2;
+        }
+
+        .token-count {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--md);
+                max-width: 100%;
+                margin: var(--sm);
+            }
+
+            .title {
+                font-size: 1.8rem;
+            }
+
+            .leaderboard-item {
+                padding: var(--md);
+            }
+
+            .rank {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+                margin-right: var(--md);
+            }
+
+            .token-number {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 1.6rem;
+            }
+
+            .leaderboard-item {
+                flex-direction: column;
+                text-align: center;
+                gap: var(--md);
+            }
+
+            .rank {
+                margin-right: 0;
+                margin-bottom: var(--sm);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="live-indicator">
+                <span style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; display: inline-block;"></span>
+                LIVE
+            </div>
+            <h1 class="title">
+                🏆 Impact Token Leaderboard
+            </h1>
+            <p class="subtitle">Real-time rankings of team members by Impact Tokens received</p>
+        </div>
+
+        <div class="leaderboard" id="leaderboard">
+            <!-- Leaderboard items will be populated by JavaScript -->
+        </div>
+
+        <div style="text-align: center;">
+            <a href="index.html" class="vote-another-btn">
+                <span>🏠</span>
+                Vote Another Token
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Load candidates from localStorage or use defaults
+        const defaultCandidates = [
+            {
+                id: 1,
+                name: "Sarah Chen",
+                project: "AI-Powered Analytics Dashboard"
+            },
+            {
+                id: 2,
+                name: "Marcus Johnson",
+                project: "Sustainable Energy Management System"
+            },
+            {
+                id: 3,
+                name: "Priya Patel",
+                project: "Global Supply Chain Optimization"
+            },
+            {
+                id: 4,
+                name: "David Kim",
+                project: "Cybersecurity Threat Detection Platform"
+            },
+            {
+                id: 5,
+                name: "Elena Rodriguez",
+                project: "Customer Experience Enhancement Initiative"
+            },
+            {
+                id: 6,
+                name: "Ahmed Hassan",
+                project: "Mobile Banking Security Framework"
+            },
+            {
+                id: 7,
+                name: "Lisa Wong",
+                project: "Healthcare Data Integration Platform"
+            },
+            {
+                id: 8,
+                name: "James Mitchell",
+                project: "Autonomous Vehicle Safety Systems"
+            },
+            {
+                id: 9,
+                name: "Nina Thompson",
+                project: "Smart City Infrastructure Management"
+            },
+            {
+                id: 10,
+                name: "Robert Chang",
+                project: "Blockchain Supply Chain Transparency"
+            }
+        ];
+
+        // Load candidates from localStorage or use defaults
+        function loadCandidates() {
+            const saved = localStorage.getItem('candidates');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error loading candidates:', e);
+                    return defaultCandidates;
+                }
+            }
+            return defaultCandidates;
+        }
+
+        // Load votes from localStorage
+        function loadVotes() {
+            return JSON.parse(localStorage.getItem('votes') || '[]');
+        }
+
+        // Calculate leaderboard data
+        function calculateLeaderboard() {
+            const votes = loadVotes();
+            const candidates = loadCandidates();
+
+            // Debug: Log the votes data
+            console.log('Loaded votes:', votes);
+
+            // Calculate totals for each candidate
+            const totals = {};
+            candidates.forEach(candidate => {
+                const candidateVotes = votes.filter(vote =>
+                    vote.participantId === candidate.id.toString() && vote.valid === true
+                );
+                totals[candidate.id] = {
+                    ...candidate,
+                    totalVotes: candidateVotes.length,
+                    recentVoters: candidateVotes.slice(-3) // Last 3 voters
+                };
+
+                // Debug: Log candidate votes
+                console.log(`Candidate ${candidate.name} (ID: ${candidate.id}) has ${candidateVotes.length} votes`);
+            });
+
+            // Sort by total votes (descending)
+            const sortedCandidates = candidates
+                .map(candidate => ({ ...candidate, totalVotes: totals[candidate.id]?.totalVotes || 0 }))
+                .sort((a, b) => b.totalVotes - a.totalVotes);
+
+            return {
+                candidates: sortedCandidates,
+                totalVotes: votes.length,
+                totalParticipants: candidates.length,
+                averageTokens: candidates.length > 0 ? (votes.length / candidates.length).toFixed(1) : 0
+            };
+        }
+
+        // Render leaderboard
+        function renderLeaderboard() {
+            const data = calculateLeaderboard();
+            const leaderboardDiv = document.getElementById('leaderboard');
+
+            // Render leaderboard items
+            leaderboardDiv.innerHTML = data.candidates.map((candidate, index) => {
+                const rank = index + 1;
+                const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+
+                return `
+                    <div class="leaderboard-item">
+                        <div class="rank ${rankClass}">${rank}</div>
+                        <div class="participant-info">
+                            <div class="participant-name">${candidate.name}</div>
+                            <div class="participant-project">${candidate.project}</div>
+                        </div>
+                        <div class="token-count">
+                            <div class="token-number">${candidate.totalVotes}</div>
+                            <div class="token-label">IT</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Listen for storage changes (real-time updates when votes are cast)
+        function listenForVoteUpdates() {
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'votes' || e.key === 'voters') {
+                    console.log('Storage event detected, updating leaderboard');
+                    renderLeaderboard();
+                }
+            });
+
+            // Also listen for our own localStorage changes (when set in the same window)
+            window.addEventListener('votesUpdated', function(e) {
+                console.log('Custom votesUpdated event detected');
+                renderLeaderboard();
+            });
+        }
+
+        // Auto-refresh leaderboard every 5 seconds for real-time updates
+        function startAutoRefresh() {
+            renderLeaderboard();
+            listenForVoteUpdates();
+            setInterval(renderLeaderboard, 5000);
+        }
+
+        // Initialize when page loads
+        window.onload = startAutoRefresh;
+    </script>
+</body>
+</html>

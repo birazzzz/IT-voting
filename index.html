@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Token (IT) Voting - Toshiba Teka</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Design Guidelines Color Palette */
+            --bg: #edeae7;
+            --card: #ffffff;
+            --border: #dedede;
+            --hover: #81EDFF;
+            --text: #222222;
+            --text2: #666666;
+            --accent: #81EDFF;
+            --xs: 4px;
+            --sm: 8px;
+            --md: 16px;
+            --lg: 24px;
+            --xl: 32px;
+            --xxl: 40px;
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 24px;
+            --r-pill: 999px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,.1);
+            --fast: .2s ease;
+            --med: .3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--md);
+        }
+
+        .container {
+            background: var(--card);
+            border-radius: var(--r-xl);
+            box-shadow: var(--shadow-lg);
+            padding: var(--xxl);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo-section {
+            margin-bottom: var(--xl);
+        }
+
+        .logo {
+            max-width: 50px;
+            height: auto;
+            margin-bottom: var(--lg);
+        }
+
+        .title {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: var(--sm);
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: var(--text2);
+            font-size: 1.1rem;
+            margin-bottom: var(--xxl);
+            line-height: 1.4;
+        }
+
+        .qr-section {
+            margin: var(--xxl) 0;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: var(--card);
+            border: 3px solid var(--border);
+            border-radius: var(--r-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            cursor: pointer;
+            transition: var(--med);
+            font-size: 1.2rem;
+            color: var(--text2);
+            font-weight: 500;
+        }
+
+        .qr-code:hover {
+            background: var(--card);
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .admin-link {
+            margin-top: var(--xl);
+        }
+
+        .admin-link a {
+            color: var(--text2);
+            font-size: 0.9rem;
+            text-decoration: none;
+            padding: var(--xs) var(--sm);
+            border: 1px solid var(--border);
+            border-radius: var(--r-sm);
+            transition: var(--fast);
+            display: inline-block;
+        }
+
+        .admin-link a:hover {
+            background: var(--card);
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--md);
+                margin: var(--sm);
+            }
+
+            .title {
+                font-size: 1.6rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .qr-code {
+                width: 180px;
+                height: 180px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo {
+                max-width: 40px;
+            }
+
+            .title {
+                font-size: 1.4rem;
+            }
+
+            .qr-code {
+                width: 160px;
+                height: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo-section">
+            <img src="src/images/Toshiba-teka.png" alt="Toshiba Teka Logo" class="logo">
+        </div>
+
+        <h1 class="title">Impact Token (IT) Voting</h1>
+        <p class="subtitle">Scan the QR code below to participate in voting for projects and team members</p>
+
+        <div class="qr-section">
+            <div class="qr-code" onclick="goToVoting()">
+                📱<br>
+                Tap to Vote
+            </div>
+        </div>
+
+        <div class="admin-link">
+            <a href="admin.html">⚙️ Admin Panel</a>
+        </div>
+    </div>
+
+    <script>
+        function goToVoting() {
+            window.location.href = 'voting.html';
+        }
+    </script>
+</body>
+</html>

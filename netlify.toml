@@ -1,8 +1,35 @@
 [build]
-  command = "npm run build"
-  publish = "build"
+  publish = "."
+  command = "echo 'Static site - no build required'"
+
+[build.environment]
+  NODE_VERSION = "18"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200 
+  from = "/voting.html"
+  to = "/voting.html"
+  status = 200
+
+[[redirects]]
+  from = "/leaderboard.html"
+  to = "/leaderboard.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin.html"
+  to = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/thank-you.html"
+  to = "/thank-you.html"
+  status = 200
+
+# Form configuration
+[forms."voting"]
+  fields = [
+    "firstName",
+    "lastName",
+    "email",
+    "totalCandidates"
+  ]

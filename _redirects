@@ -1,0 +1,7 @@
+# Netlify redirects and headers
+/voting.html  /voting.html  200
+/leaderboard.html  /leaderboard.html  200
+/admin.html  /admin.html  200
+
+# Handle form submissions
+https://submit-form.com/*  https://submit-form.com/:splat  200

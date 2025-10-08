@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting - Impact Token (IT) Voting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Design Guidelines Color Palette */
+            --bg: #edeae7;
+            --card: #ffffff;
+            --border: #dedede;
+            --hover: #81EDFF;
+            --text: #222222;
+            --text2: #666666;
+            --accent: #81EDFF;
+            --xs: 4px;
+            --sm: 8px;
+            --md: 16px;
+            --lg: 24px;
+            --xl: 32px;
+            --xxl: 40px;
+            --r-sm: 8px;
+            --r-md: 12px;
+            --r-lg: 16px;
+            --r-xl: 24px;
+            --r-pill: 999px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,.1);
+            --shadow-md: 0 4px 12px rgba(0,0,0,.1);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,.1);
+            --fast: .2s ease;
+            --med: .3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--md);
+        }
+
+        .container {
+            background: var(--card);
+            border-radius: var(--r-xl);
+            box-shadow: var(--shadow-lg);
+            padding: var(--xxl);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--xl);
+        }
+
+        .back-btn {
+            background: transparent;
+            color: var(--text2);
+            border: 2px solid var(--border);
+            padding: var(--sm) var(--md);
+            border-radius: var(--r-pill);
+            cursor: pointer;
+            transition: var(--fast);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--xs);
+        }
+
+        .back-btn:hover {
+            background: var(--card);
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .title {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 1.8rem;
+            margin-bottom: var(--sm);
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text2);
+            font-size: 1rem;
+            margin-bottom: var(--xl);
+            text-align: center;
+        }
+
+        .form-section {
+            margin-bottom: var(--xl);
+        }
+
+        .form-group {
+            margin-bottom: var(--lg);
+            text-align: left;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--md);
+            margin-bottom: var(--lg);
+        }
+
+        .form-section label {
+            display: block;
+            margin-bottom: var(--xs);
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.85rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: var(--sm) var(--md);
+            border: 2px solid var(--border);
+            border-radius: var(--r-sm);
+            font-family: 'Manrope', sans-serif;
+            transition: var(--fast);
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .candidates-section {
+            margin: var(--xl) 0;
+        }
+
+        .section-title {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: var(--lg);
+            text-align: center;
+        }
+
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--md);
+            margin-bottom: var(--lg);
+        }
+
+        .candidate-card {
+            border: 2px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: var(--lg);
+            cursor: pointer;
+            transition: var(--fast);
+            background: var(--card);
+            position: relative;
+        }
+
+        .candidate-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .candidate-card.selected {
+            border-color: var(--accent);
+            background: #f8f9ff;
+        }
+
+        .candidate-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: var(--sm);
+            right: var(--sm);
+            background: var(--accent);
+            color: var(--text);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .candidate-name {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: var(--xs);
+        }
+
+        .candidate-project {
+            color: var(--text2);
+            font-size: 0.9rem;
+            margin-bottom: var(--sm);
+        }
+
+        .candidate-description {
+            color: var(--text2);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .submit-section {
+            text-align: center;
+            padding-top: var(--xl);
+            border-top: 1px solid var(--border);
+        }
+
+        .submit-btn {
+            background: var(--accent);
+            color: var(--text);
+            border: none;
+            padding: var(--md) var(--xl);
+            font-size: 1.1rem;
+            border-radius: var(--r-pill);
+            cursor: pointer;
+            transition: var(--fast);
+            font-weight: 600;
+            font-family: 'Manrope', sans-serif;
+            min-width: 200px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .selection-info {
+            background: #e8f4f8;
+            border: 1px solid var(--accent);
+            border-radius: var(--r-md);
+            padding: var(--md);
+            margin-bottom: var(--lg);
+            text-align: center;
+        }
+
+        .selection-count {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--md);
+                margin: var(--sm);
+            }
+
+            .header {
+                flex-direction: column;
+                gap: var(--md);
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: var(--sm);
+            }
+
+            .candidates-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .title {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="flex: 1;"></div>
+        </div>
+
+        <h1 class="title">Award Impact Tokens</h1>
+        <p class="subtitle">Select team members and their projects to recognize with Impact Tokens</p>
+
+        <form id="voting-form" name="voting" method="POST" action="/" data-netlify="true" data-netlify-honeypot="bot-field">
+            <input type="hidden" name="form-name" value="voting" />
+
+            <!-- Honeypot field for spam protection -->
+            <div style="display: none;">
+                <label>
+                    Don't fill this out if you're human: <input name="bot-field" />
+                </label>
+            </div>
+            <div class="form-section">
+                <h2 style="text-align: center; margin-bottom: 24px; color: #222;">Your Information</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="first-name">First Name:</label>
+                        <input type="text" id="first-name" name="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="last-name">Last Name:</label>
+                        <input type="text" id="last-name" name="lastName" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+            </div>
+
+            <div class="candidates-section">
+                <h2 class="section-title">Select Team Members & Projects</h2>
+                <div id="selection-info" class="selection-info" style="display: none;">
+                    <div class="selection-count">Selected: <span id="selected-count">0</span> team members (up to 5)</div>
+                </div>
+
+                <div class="candidates-grid" id="candidates-container">
+                    <!-- Candidates will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div class="submit-section">
+                <!-- Hidden fields for selected candidates data -->
+                <div id="hidden-fields" style="display: none;">
+                    <!-- These will be populated by JavaScript before form submission -->
+                </div>
+                <button type="button" class="submit-btn" id="submit-btn" onclick="submitVote()">Give Impact Token</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Load candidates from localStorage or use defaults
+        const defaultCandidates = [
+            {
+                id: 1,
+                name: "Sarah Chen",
+                project: "AI-Powered Analytics Dashboard"
+            },
+            {
+                id: 2,
+                name: "Marcus Johnson",
+                project: "Sustainable Energy Management System"
+            },
+            {
+                id: 3,
+                name: "Priya Patel",
+                project: "Global Supply Chain Optimization"
+            },
+            {
+                id: 4,
+                name: "David Kim",
+                project: "Cybersecurity Threat Detection Platform"
+            },
+            {
+                id: 5,
+                name: "Elena Rodriguez",
+                project: "Customer Experience Enhancement Initiative"
+            },
+            {
+                id: 6,
+                name: "Ahmed Hassan",
+                project: "Mobile Banking Security Framework"
+            },
+            {
+                id: 7,
+                name: "Lisa Wong",
+                project: "Healthcare Data Integration Platform"
+            },
+            {
+                id: 8,
+                name: "James Mitchell",
+                project: "Autonomous Vehicle Safety Systems"
+            },
+            {
+                id: 9,
+                name: "Nina Thompson",
+                project: "Smart City Infrastructure Management"
+            },
+            {
+                id: 10,
+                name: "Robert Chang",
+                project: "Blockchain Supply Chain Transparency"
+            }
+        ];
+
+        // Load candidates from localStorage or use defaults
+        function loadCandidates() {
+            const saved = localStorage.getItem('candidates');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error loading candidates:', e);
+                    return defaultCandidates;
+                }
+            }
+            return defaultCandidates;
+        }
+
+        // State management
+        window.selectedCandidates = [];
+
+        // Initialize the page
+        function init() {
+            renderCandidates();
+        }
+
+        // Render candidate cards
+        function renderCandidates() {
+            const candidates = loadCandidates();
+            const container = document.getElementById('candidates-container');
+
+            container.innerHTML = candidates.map(candidate => `
+                <div class="candidate-card" data-id="${candidate.id}" onclick="toggleCandidate(${candidate.id})">
+                    <div class="candidate-name">${candidate.name}</div>
+                    <div class="candidate-project">${candidate.project}</div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle candidate selection
+        function toggleCandidate(candidateId) {
+            const card = document.querySelector(`[data-id="${candidateId}"]`);
+            const candidates = loadCandidates();
+            const candidate = candidates.find(c => c.id === candidateId);
+
+            if (window.selectedCandidates.find(c => c.id === candidateId)) {
+                // Deselect
+                window.selectedCandidates = window.selectedCandidates.filter(c => c.id !== candidateId);
+                card.classList.remove('selected');
+            } else {
+                // Check if we've reached the limit
+                if (window.selectedCandidates.length >= 5) {
+                    alert('You can select up to 5 team members only.');
+                    return;
+                }
+
+                // Select
+                window.selectedCandidates.push(candidate);
+                card.classList.add('selected');
+            }
+
+            updateSelectionInfo();
+        }
+
+        // Update selection information display
+        function updateSelectionInfo() {
+            const infoDiv = document.getElementById('selection-info');
+            const countSpan = document.getElementById('selected-count');
+
+            if (window.selectedCandidates.length > 0) {
+                countSpan.textContent = window.selectedCandidates.length;
+                infoDiv.style.display = 'block';
+            } else {
+                infoDiv.style.display = 'none';
+            }
+
+            // Update submit button state
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = window.selectedCandidates.length === 0;
+        }
+
+        // Submit vote function - handles Netlify form submission
+        function submitVote() {
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
+            const email = document.getElementById('email').value;
+
+            if (window.selectedCandidates.length === 0) {
+                alert('Please select at least one team member to award Impact Tokens.');
+                return;
+            }
+
+            // Create hidden fields for selected candidates
+            const hiddenFieldsContainer = document.getElementById('hidden-fields');
+            hiddenFieldsContainer.innerHTML = '';
+
+            window.selectedCandidates.forEach((candidate, index) => {
+                const candidateData = `
+                    <input type="hidden" name="candidate_${index}_id" value="${candidate.id}">
+                    <input type="hidden" name="candidate_${index}_name" value="${candidate.name}">
+                    <input type="hidden" name="candidate_${index}_project" value="${candidate.project}">
+                `;
+                hiddenFieldsContainer.insertAdjacentHTML('beforeend', candidateData);
+            });
+
+            // Add total count
+            hiddenFieldsContainer.insertAdjacentHTML('beforeend',
+                `<input type="hidden" name="totalCandidates" value="${window.selectedCandidates.length}">`
+            );
+
+            // Save to localStorage for leaderboard
+            const existingVotes = JSON.parse(localStorage.getItem('votes') || '[]');
+            const existingVoters = JSON.parse(localStorage.getItem('voters') || '[]');
+
+            window.selectedCandidates.forEach(candidate => {
+                const vote = {
+                    id: Date.now().toString() + Math.random(),
+                    voterName: `${firstName} ${lastName}`,
+                    voterEmail: email,
+                    participantId: candidate.id.toString(),
+                    participantName: candidate.name,
+                    timestamp: new Date().toISOString(),
+                    valid: true
+                };
+
+                const voter = {
+                    name: `${firstName} ${lastName}`,
+                    email: email,
+                    participantId: candidate.id.toString(),
+                    timestamp: vote.timestamp
+                };
+
+                existingVotes.push(vote);
+                existingVoters.push(voter);
+            });
+
+            localStorage.setItem('votes', JSON.stringify(existingVotes));
+            localStorage.setItem('voters', JSON.stringify(existingVoters));
+
+            // Dispatch event for real-time updates
+            window.dispatchEvent(new Event('votesUpdated'));
+
+            // Show success message
+            alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
+
+            // Submit form to Netlify and redirect to leaderboard
+            const form = document.getElementById('voting-form');
+            const formData = new FormData(form);
+
+            fetch('/', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (response.ok) {
+                    // Redirect to leaderboard after successful submission
+                    window.location.href = 'leaderboard.html';
+                } else {
+                    alert('Error submitting form. Please try again.');
+                }
+            }).catch(error => {
+                console.error('Form submission error:', error);
+                alert('Error submitting form. Please try again.');
+            });
+        }
+
+        // Initialize when page loads
+        window.onload = init;
+    </script>
+</body>
+</html>
