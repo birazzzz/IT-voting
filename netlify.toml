@@ -1,9 +1,32 @@
+# Netlify Configuration for Static Site
 [build]
+  # Base directory for the build
+  base = "."
+  
+  # Publish directory (root of the repository)
   publish = "."
-  command = "true"
+  
+  # No build command needed for static site
+  command = ""
+  
+  # Environment variables (if any)
+  [build.environment]
+    # Set Node.js version (not used but prevents auto-detection)
+    NODE_VERSION = "18"
+    
+    # Disable unnecessary processing
+    NPM_FLAGS = "--no-optional"
+    
+# Disable build plugins that might interfere
+[build.processing]
+  skip_processing = true
 
-# This is a pure static HTML/JS/CSS site
-# No build process required - files are served directly
+# Explicitly set as a static site
+[build.processing.html]
+  pretty_urls = true
+  
+[build.processing.images]
+  compress = true
 
 [[redirects]]
   from = "/voting.html"
