@@ -29,7 +29,7 @@ cd IT-voting
 
 2. Start the local server:
 ```bash
-node server.js
+node server-local.js
 ```
 
 3. Open `http://localhost:4000` in your browser
@@ -69,19 +69,15 @@ The `netlify.toml` file includes:
 ## File Structure
 
 ```
-/
 ├── index.html          # Home page
 ├── voting.html         # Voting interface
 ├── leaderboard.html    # Rankings display
 ├── admin.html          # Management panel
 ├── thank-you.html      # Success page
-├── server.js           # Local development server
-├── netlify.toml        # Deployment configuration
+├── server-local.js         # Local development server *(renamed)*
+├── netlify.toml            # Deployment configuration
 ├── _redirects          # URL routing
 ├── Toshiba-teka.png    # Logo image
 └── logo.svg           # SVG logo
-```
-
-## Support
 
 For issues or questions, please check the GitHub repository or Netlify dashboard for form submissions.
