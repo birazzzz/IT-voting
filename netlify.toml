@@ -1,5 +1,5 @@
 [build]
-  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg thank-you.html Toshiba-teka.png votes.json voting.html public/qr.png build/ && cp public/* build/"
+  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg thank-you.html Toshiba-teka.png votes.json voting.html public build/"
   publish = "build"
 
 # Basic SPA routing
@@ -17,5 +17,21 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
 
-# Removed explicit form configuration to allow Netlify's automatic form detection
-# Netlify Forms will automatically detect the form with name="voting" and data-netlify="true"
+# Form configuration for voting form
+[forms."voting"]
+  fields = [
+    "firstName",
+    "lastName",
+    "email",
+    "totalCandidates",
+    "candidate_0_id", "candidate_0_name", "candidate_0_project",
+    "candidate_1_id", "candidate_1_name", "candidate_1_project",
+    "candidate_2_id", "candidate_2_name", "candidate_2_project",
+    "candidate_3_id", "candidate_3_name", "candidate_3_project",
+    "candidate_4_id", "candidate_4_name", "candidate_4_project",
+    "candidate_5_id", "candidate_5_name", "candidate_5_project",
+    "candidate_6_id", "candidate_6_name", "candidate_6_project",
+    "candidate_7_id", "candidate_7_name", "candidate_7_project",
+    "candidate_8_id", "candidate_8_name", "candidate_8_project",
+    "candidate_9_id", "candidate_9_name", "candidate_9_project"
+  ]
