@@ -1,21 +1,11 @@
 [build]
-  # Publish from the root directory
-  publish = "/"
-  functions = "netlify/functions"
+  # Publish directory (Netlify will serve files from here)
+  publish = "."
+  
+  # No build command needed for static site
   command = ""
 
-# Environment settings
-[build.environment]
-  NODE_VERSION = "18"
-
-# Handle form submissions
-[[redirects]]
-  from = "/submit-vote"
-  to = "/.netlify/functions/submit-vote"
-  status = 200
-  force = true
-
-# Handle SPA routing
+# Basic redirects and headers
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -28,7 +18,8 @@
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "same-origin"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https:;"
   
 [build.processing.images]
   compress = true

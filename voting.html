@@ -299,9 +299,15 @@
         <h1 class="title">Award Impact Tokens</h1>
         <p class="subtitle">Select team members and their projects to recognize with Impact Tokens</p>
 
-        <form id="voting-form">
-            <!-- Hidden fields for selected candidates will be added by JavaScript -->
-            <div id="hidden-fields"></div>
+        <form id="voting-form" name="voting" method="POST" action="/" data-netlify="true" data-netlify-honeypot="bot-field">
+            <input type="hidden" name="form-name" value="voting" />
+
+            <!-- Honeypot field for spam protection -->
+            <div style="display: none;">
+                <label>
+                    Don't fill this out if you're human: <input name="bot-field" />
+                </label>
+            </div>
             <div class="form-section">
                 <h2 style="text-align: center; margin-bottom: 24px; color: #222;">Your Information</h2>
                 <div class="form-row">
@@ -476,88 +482,82 @@
         }
 
         // Handle form submission
-        document.getElementById('voting-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const firstName = document.getElementById('first-name').value.trim();
-            const lastName = document.getElementById('last-name').value.trim();
-            const email = document.getElementById('email').value.trim();
+        document.getElementById('voting-form').addEventListener('submit', function(e) {
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
+            const email = document.getElementById('email').value;
 
             if (window.selectedCandidates.length === 0) {
+                e.preventDefault();
                 alert('Please select at least one team member to award Impact Tokens.');
                 return;
             }
 
-            // Prepare form data
-            const voteData = {
-                firstName,
-                lastName,
-                email,
-                timestamp: new Date().toISOString(),
-                candidates: window.selectedCandidates.map(candidate => ({
-                    id: candidate.id,
-                    name: candidate.name,
-                    project: candidate.project || ''
-                }))
-            };
+            // Create hidden fields for selected candidates
+            const hiddenFieldsContainer = document.getElementById('hidden-fields');
+            hiddenFieldsContainer.innerHTML = '';
 
-            // Show loading state
-            const submitBtn = document.querySelector('#voting-form button[type="submit"]');
-            const originalBtnText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+            window.selectedCandidates.forEach((candidate, index) => {
+                const candidateData = `
+                    <input type="hidden" name="candidate_${index}_id" value="${candidate.id}">
+                    <input type="hidden" name="candidate_${index}_name" value="${candidate.name}">
+                    <input type="hidden" name="candidate_${index}_project" value="${candidate.project}">
+                `;
+                hiddenFieldsContainer.insertAdjacentHTML('beforeend', candidateData);
+            });
 
-            try {
-                const response = await fetch('/.netlify/functions/submit-vote', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(voteData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Save to localStorage for leaderboard
-                    const existingVotes = JSON.parse(localStorage.getItem('votes') || '[]');
-                    const existingVoters = JSON.parse(localStorage.getItem('voters') || '[]');
-                    
-                    window.selectedCandidates.forEach(candidate => {
-                        const vote = {
-                            id: Date.now().toString() + Math.random(),
-                            voterName: `${firstName} ${lastName}`,
-                            voterEmail: email,
-                            participantId: candidate.id.toString(),
-                            participantName: candidate.name,
-                            timestamp: new Date().toISOString(),
-                            valid: true
-                        };
-                        existingVotes.push(vote);
-                    });
+            // Add total count
+            hiddenFieldsContainer.insertAdjacentHTML('beforeend',
+                `<input type="hidden" name="totalCandidates" value="${window.selectedCandidates.length}">`
+            );
 
-                    // Save to localStorage
-                    localStorage.setItem('votes', JSON.stringify(existingVotes));
-                    
-                    // Mark this email as having voted
-                    if (!existingVoters.includes(email.toLowerCase())) {
-                        existingVoters.push(email.toLowerCase());
-                        localStorage.setItem('voters', JSON.stringify(existingVoters));
-                    }
-                    
-                    // Redirect to thank you page
-                    window.location.href = result.redirect || '/thank-you.html';
-                } else {
-                    alert(result.message || 'Failed to submit your vote. Please try again.');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalBtnText;
-                }
-            } catch (error) {
-                console.error('Error submitting vote:', error);
-                alert('An error occurred while submitting your vote. Please try again.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
-            }
+            // Save to localStorage for leaderboard
+            const existingVotes = JSON.parse(localStorage.getItem('votes') || '[]');
+            const existingVoters = JSON.parse(localStorage.getItem('voters') || '[]');
+            
+            // Redirect to leaderboard after a short delay to allow form submission to complete
+            setTimeout(() => {
+                window.location.href = '/leaderboard.html';
+            }, 1000);
+
+            window.selectedCandidates.forEach(candidate => {
+                const vote = {
+                    id: Date.now().toString() + Math.random(),
+                    voterName: `${firstName} ${lastName}`,
+                    voterEmail: email,
+                    participantId: candidate.id.toString(),
+                    participantName: candidate.name,
+                    timestamp: new Date().toISOString(),
+                    valid: true
+                };
+
+                const voter = {
+                    name: `${firstName} ${lastName}`,
+                    email: email,
+                    participantId: candidate.id.toString(),
+                    timestamp: vote.timestamp
+                };
+
+                existingVotes.push(vote);
+                existingVoters.push(voter);
+            });
+
+            localStorage.setItem('votes', JSON.stringify(existingVotes));
+            localStorage.setItem('voters', JSON.stringify(existingVoters));
+
+            // Dispatch event for real-time updates
+            window.dispatchEvent(new Event('votesUpdated'));
+
+            // Show success message
+            alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
+            
+            // Store a flag in localStorage to indicate successful submission
+            localStorage.setItem('formSubmitted', 'true');
+            
+            // Redirect to leaderboard after a short delay to allow form submission
+            setTimeout(() => {
+                window.location.href = 'leaderboard.html';
+            }, 500);
         });
 
         // Initialize when page loads
