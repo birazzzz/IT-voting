@@ -546,8 +546,13 @@
             // Show success message
             alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
             
-            // Let the form submit naturally to Netlify
-            // The success page is handled by Netlify's form settings
+            // Store a flag in localStorage to indicate successful submission
+            localStorage.setItem('formSubmitted', 'true');
+            
+            // Redirect to leaderboard after a short delay to allow form submission
+            setTimeout(() => {
+                window.location.href = 'leaderboard.html';
+            }, 500);
         });
 
         // Initialize when page loads
