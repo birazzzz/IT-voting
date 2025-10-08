@@ -1,9 +1,9 @@
 [build]
   publish = "."
-  command = "echo 'No build process needed for static site' && exit 0"
+  command = "true"
 
-# Explicitly disable Node.js build environment
 # This is a pure static HTML/JS/CSS site
+# No build process required - files are served directly
 
 [[redirects]]
   from = "/voting.html"
