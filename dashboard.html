@@ -256,6 +256,106 @@
             color: #2c3e50;
         }
 
+        /* Table Styles */
+        .candidates-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .candidates-table th,
+        .candidates-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .candidates-table th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        .candidates-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .candidates-table tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        .candidates-table .candidate-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .candidates-table .candidate-project {
+            color: #7f8c8d;
+            font-size: 0.85em;
+        }
+
+        .candidates-table .stat-highlight {
+            font-weight: 600;
+            color: #27ae60;
+        }
+
+        /* Voter Details Section */
+        .voter-details-section {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .voter-details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .voter-details-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .close-voter-details {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .voters-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+
+        .voters-table th,
+        .voters-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .voters-table th {
+            background: #ecf0f1;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .voters-table tr:hover {
+            background: #f5f5f5;
+        }
+
         .activity-log {
             max-height: 400px;
             overflow-y: auto;
@@ -398,8 +498,46 @@
                 <div class="data-section">
                     <div class="section-header">👥 All Candidates Performance</div>
                     <div class="section-content">
-                        <div id="all-candidates" class="candidate-grid">
-                            <!-- All candidate cards will be populated here -->
+                        <div class="table-container">
+                            <table class="candidates-table" id="candidatesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Candidate</th>
+                                        <th>Project</th>
+                                        <th>Total Votes</th>
+                                        <th>IT Given</th>
+                                        <th>Unique Voters</th>
+                                        <th>Avg IT/Vote</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="candidatesTableBody">
+                                    <!-- Candidate rows will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Voter Details Section (initially hidden) -->
+                        <div id="voterDetailsSection" class="voter-details-section" style="display: none;">
+                            <div class="voter-details-header">
+                                <div class="voter-details-title" id="voterDetailsTitle">Voters for: <span id="selectedCandidateName"></span></div>
+                                <button class="close-voter-details" onclick="closeVoterDetails()">✕ Close</button>
+                            </div>
+                            <div class="table-container">
+                                <table class="voters-table" id="votersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Voter Name</th>
+                                            <th>Email</th>
+                                            <th>Vote Time</th>
+                                            <th>IT Given</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="votersTableBody">
+                                        <!-- Voter rows will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -568,13 +706,13 @@
             });
         }
 
-        // Update all candidates display
+        // Update all candidates display (now as table)
         function updateAllCandidates() {
-            const container = document.getElementById('all-candidates');
-            container.innerHTML = '';
+            const tbody = document.getElementById('candidatesTableBody');
+            tbody.innerHTML = '';
 
             if (allCandidates.length === 0) {
-                container.innerHTML = '<div class="no-data">No candidates found.</div>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #95a5a6; padding: 40px;">No candidates found.</td></tr>';
                 return;
             }
 
@@ -604,12 +742,77 @@
                 .sort((a, b) => b.votes - a.votes);
 
             sortedCandidates.forEach(candidate => {
-                const card = createCandidateCard(candidate);
-                container.appendChild(card);
+                const row = document.createElement('tr');
+                const uniqueVoters = candidate.voters ? candidate.voters.size : 0;
+                const avgIT = candidate.votes > 0 ? (candidate.it / candidate.votes).toFixed(1) : '0.0';
+
+                row.innerHTML = `
+                    <td>
+                        <div class="candidate-name">${candidate.name}</div>
+                    </td>
+                    <td>
+                        <div class="candidate-project">${candidate.project}</div>
+                    </td>
+                    <td><span class="stat-highlight">${candidate.votes || 0}</span></td>
+                    <td><span class="stat-highlight">${candidate.it || 0}</span></td>
+                    <td><span class="stat-highlight">${uniqueVoters}</span></td>
+                    <td>${avgIT}</td>
+                    <td>
+                        <button class="btn btn-primary btn-small" onclick="showVoterDetails('${candidate.id}', '${candidate.name}')">
+                            👥 View Voters
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(row);
             });
         }
 
-        // Create candidate card
+        // Show voter details for a specific candidate
+        function showVoterDetails(candidateId, candidateName) {
+            const candidateVotes = filteredVotes.filter(vote => vote.participantId === candidateId);
+
+            if (candidateVotes.length === 0) {
+                alert(`No votes found for ${candidateName}`);
+                return;
+            }
+
+            // Update the voter details section
+            document.getElementById('selectedCandidateName').textContent = candidateName;
+            document.getElementById('voterDetailsSection').style.display = 'block';
+
+            // Populate voters table
+            const tbody = document.getElementById('votersTableBody');
+            tbody.innerHTML = '';
+
+            // Sort votes by timestamp (newest first)
+            const sortedVotes = candidateVotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            sortedVotes.forEach(vote => {
+                const row = document.createElement('tr');
+                const voteDate = new Date(vote.timestamp);
+                const formattedTime = voteDate.toLocaleString();
+
+                row.innerHTML = `
+                    <td>${vote.voterName}</td>
+                    <td>${vote.voterEmail}</td>
+                    <td>${formattedTime}</td>
+                    <td>1</td>
+                `;
+
+                tbody.appendChild(row);
+            });
+
+            // Scroll to the voter details section
+            document.getElementById('voterDetailsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Close voter details section
+        function closeVoterDetails() {
+            document.getElementById('voterDetailsSection').style.display = 'none';
+        }
+
+        // Create candidate card (for top candidates section)
         function createCandidateCard(candidate) {
             const card = document.createElement('div');
             card.className = 'candidate-card';
@@ -727,25 +930,64 @@
             updateDashboard();
         }
 
-        // Export data
+        // Export data as CSV
         function exportData() {
-            const data = {
-                votes: filteredVotes,
-                statistics: {
-                    totalVotes: filteredVotes.length,
-                    totalIT: filteredVotes.length,
-                    uniqueVoters: new Set(filteredVotes.map(v => v.voterEmail)).size,
-                    exportDate: new Date().toISOString()
-                }
-            };
+            if (filteredVotes.length === 0) {
+                alert('No data to export. Please apply filters or refresh the data.');
+                return;
+            }
 
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            // Create CSV headers
+            const headers = [
+                'Vote ID',
+                'Voter Name',
+                'Voter Email',
+                'Candidate ID',
+                'Candidate Name',
+                'Candidate Project',
+                'Vote Timestamp',
+                'IT Given'
+            ];
+
+            // Convert votes to CSV rows
+            const csvRows = filteredVotes.map(vote => [
+                vote.id || '',
+                `"${vote.voterName}"`,
+                `"${vote.voterEmail}"`,
+                vote.participantId || '',
+                `"${vote.participantName}"`,
+                `"${getCandidateProject(vote.participantId)}"`,
+                vote.timestamp || '',
+                '1'
+            ]);
+
+            // Combine headers and rows
+            const csvContent = [
+                headers.join(','),
+                ...csvRows.map(row => row.join(','))
+            ].join('\n');
+
+            // Create and download CSV file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `voting-data-${new Date().toISOString().split('T')[0]}.json`;
+
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filterInfo = document.getElementById('candidate-filter').value !== 'all' ?
+                `-${document.querySelector('#candidate-filter option:checked').text}` : '';
+
+            a.download = `voting-data-${timestamp}${filterInfo}.csv`;
             a.click();
             URL.revokeObjectURL(url);
+
+            alert(`Exported ${filteredVotes.length} votes to CSV file`);
+        }
+
+        // Helper function to get candidate project name
+        function getCandidateProject(candidateId) {
+            const candidate = allCandidates.find(c => c.id.toString() === candidateId.toString());
+            return candidate ? candidate.project : '';
         }
     </script>
 </body>
