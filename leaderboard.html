@@ -276,72 +276,32 @@
             supabase = null;
         }
         
-        // Load candidates from localStorage or use defaults
-        const defaultCandidates = [
-            {
-                id: 1,
-                name: "Sarah Chen",
-                project: "AI-Powered Analytics Dashboard"
-            },
-            {
-                id: 2,
-                name: "Marcus Johnson",
-                project: "Sustainable Energy Management System"
-            },
-            {
-                id: 3,
-                name: "Priya Patel",
-                project: "Global Supply Chain Optimization"
-            },
-            {
-                id: 4,
-                name: "David Kim",
-                project: "Cybersecurity Threat Detection Platform"
-            },
-            {
-                id: 5,
-                name: "Elena Rodriguez",
-                project: "Customer Experience Enhancement Initiative"
-            },
-            {
-                id: 6,
-                name: "Ahmed Hassan",
-                project: "Mobile Banking Security Framework"
-            },
-            {
-                id: 7,
-                name: "Lisa Wong",
-                project: "Healthcare Data Integration Platform"
-            },
-            {
-                id: 8,
-                name: "James Mitchell",
-                project: "Autonomous Vehicle Safety Systems"
-            },
-            {
-                id: 9,
-                name: "Nina Thompson",
-                project: "Smart City Infrastructure Management"
-            },
-            {
-                id: 10,
-                name: "Robert Chang",
-                project: "Blockchain Supply Chain Transparency"
-            }
-        ];
+        // Load candidates from Supabase or use empty array
+        const defaultCandidates = [];
 
-        // Load candidates from localStorage or use defaults
-        function loadCandidates() {
-            const saved = localStorage.getItem('candidates');
-            if (saved) {
-                try {
-                    return JSON.parse(saved);
-                } catch (e) {
-                    console.error('Error loading candidates:', e);
+        // Load candidates from Supabase
+        async function loadCandidates() {
+            if (!supabase) {
+                console.error('Supabase client not initialized');
+                return defaultCandidates;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('candidates')
+                    .select('*')
+                    .order('name', { ascending: true });
+                
+                if (error) {
+                    console.error('Error fetching candidates from Supabase:', error);
                     return defaultCandidates;
                 }
+                
+                return data || defaultCandidates;
+            } catch (err) {
+                console.error('Error loading candidates from Supabase:', err);
+                return defaultCandidates;
             }
-            return defaultCandidates;
         }
 
         // Load votes from localStorage
@@ -396,7 +356,7 @@
         // Calculate leaderboard data
         async function calculateLeaderboard() {
             const { votes, isGlobal } = await loadVotesFromSupabase();
-            const candidates = loadCandidates();
+            const candidates = await loadCandidates();
 
             // Update UI to show data source (always global now)
             const statusText = document.getElementById('status-text');

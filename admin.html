@@ -342,6 +342,7 @@
     </style>
 </head>
 <body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0"></script>
     <div class="container">
         <div class="header">
             <h1 class="title">
@@ -398,79 +399,84 @@
     </div>
 
     <script>
-        // Default candidates data
-        const defaultCandidates = [
-            {
-                id: 1,
-                name: "Sarah Chen",
-                project: "AI-Powered Analytics Dashboard"
-            },
-            {
-                id: 2,
-                name: "Marcus Johnson",
-                project: "Sustainable Energy Management System"
-            },
-            {
-                id: 3,
-                name: "Priya Patel",
-                project: "Global Supply Chain Optimization"
-            },
-            {
-                id: 4,
-                name: "David Kim",
-                project: "Cybersecurity Threat Detection Platform"
-            },
-            {
-                id: 5,
-                name: "Elena Rodriguez",
-                project: "Customer Experience Enhancement Initiative"
-            },
-            {
-                id: 6,
-                name: "Ahmed Hassan",
-                project: "Mobile Banking Security Framework"
-            },
-            {
-                id: 7,
-                name: "Lisa Wong",
-                project: "Healthcare Data Integration Platform"
-            },
-            {
-                id: 8,
-                name: "James Mitchell",
-                project: "Autonomous Vehicle Safety Systems"
-            },
-            {
-                id: 9,
-                name: "Nina Thompson",
-                project: "Smart City Infrastructure Management"
-            },
-            {
-                id: 10,
-                name: "Robert Chang",
-                project: "Blockchain Supply Chain Transparency"
-            }
-        ];
+        // Initialize Supabase with your provided credentials
+        const SUPABASE_URL = 'https://ssrxybgexgntfdvkusyw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzYwMDEsImV4cCI6MjA3NTU1MjAwMX0._4WQ4uUE9ALjtZPSG11nouFA3MBftPgeCOf1trhoFlk';
+        
+        // Initialize Supabase client
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+            supabase = null;
+        }
+        
+        // Default candidates data (empty for Supabase sync)
+        const defaultCandidates = [];
 
-        // Load candidates from localStorage or use defaults
-        function loadCandidates() {
-            const saved = localStorage.getItem('candidates');
-            if (saved) {
-                try {
-                    return JSON.parse(saved);
-                } catch (e) {
-                    console.error('Error loading candidates:', e);
+        // Load candidates from Supabase
+        async function loadCandidates() {
+            if (!supabase) {
+                console.error('Supabase client not initialized');
+                return defaultCandidates;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('candidates')
+                    .select('*')
+                    .order('name', { ascending: true });
+                
+                if (error) {
+                    console.error('Error fetching candidates from Supabase:', error);
                     return defaultCandidates;
                 }
+                
+                return data || defaultCandidates;
+            } catch (err) {
+                console.error('Error loading candidates from Supabase:', err);
+                return defaultCandidates;
             }
-            return defaultCandidates;
         }
 
-        // Save candidates to localStorage
-        function saveCandidates(candidates) {
-            localStorage.setItem('candidates', JSON.stringify(candidates));
-            // Also update the voting page data
-            localStorage.setItem('votingCandidates', JSON.stringify(candidates));
+        // Save candidates to Supabase
+        async function saveCandidates(candidates) {
+            if (!supabase) {
+                console.error('Supabase client not initialized');
+                return false;
+            }
+            
+            try {
+                // First, clear all existing candidates
+                const { error: deleteError } = await supabase
+                    .from('candidates')
+                    .delete()
+                    .neq('id', 0); // Delete all records
+                
+                if (deleteError) {
+                    console.error('Error clearing candidates:', deleteError);
+                    return false;
+                }
+                
+                // Then insert all candidates
+                if (candidates.length > 0) {
+                    const { error: insertError } = await supabase
+                        .from('candidates')
+                        .insert(candidates);
+                    
+                    if (insertError) {
+                        console.error('Error saving candidates:', insertError);
+                        return false;
+                    }
+                }
+                
+                return true;
+            } catch (err) {
+                console.error('Error saving candidates to Supabase:', err);
+                return false;
+            }
         }
 
         // Show message
@@ -492,9 +498,8 @@
         }
 
         // Add new candidate
-        function addCandidate(candidate) {
-            const candidates = loadCandidates();
-            const newId = candidates.length > 0 ? Math.max(...candidates.map(c => c.id), 0) + 1 : 1;
+        async function addCandidate(candidate) {
+            const candidates = await loadCandidates();
             
             // Validate input
             if (!candidate.name || !candidate.project) {
@@ -514,57 +519,75 @@
             }
             
             const newCandidate = {
-                id: newId,
                 name: candidate.name.trim(),
                 project: candidate.project.trim(),
-                votes: 0,  // Initialize vote count
-                createdAt: new Date().toISOString()
+                created_at: new Date().toISOString()
             };
 
-            candidates.push(newCandidate);
-            saveCandidates(candidates);
+            // Add to Supabase
+            if (!supabase) {
+                showMessage('error', 'Supabase is not configured');
+                return false;
+            }
             
-            // Also update the voting page data
-            const votingCandidates = JSON.parse(localStorage.getItem('votingCandidates') || '[]');
-            votingCandidates.push(newCandidate);
-            localStorage.setItem('votingCandidates', JSON.stringify(votingCandidates));
-            
-            renderCandidates();
-            resetForm();
-            showMessage('success', `Added "${candidate.name}" successfully!`);
-            return true;
+            try {
+                const { data, error } = await supabase
+                    .from('candidates')
+                    .insert([newCandidate])
+                    .select();
+                
+                if (error) {
+                    console.error('Error adding candidate:', error);
+                    showMessage('error', 'Error adding candidate: ' + error.message);
+                    return false;
+                }
+                
+                showMessage('success', `Added "${candidate.name}" successfully!`);
+                await renderCandidates();
+                resetForm();
+                return true;
+            } catch (err) {
+                console.error('Error adding candidate:', err);
+                showMessage('error', 'Error adding candidate');
+                return false;
+            }
         }
 
         // Remove candidate
-        function removeCandidate(id) {
+        async function removeCandidate(id) {
             if (!confirm('Are you sure you want to remove this candidate? This action cannot be undone.')) {
                 return;
             }
             
-            let candidates = loadCandidates();
-            const candidateToRemove = candidates.find(c => c.id === id);
-            
-            if (!candidateToRemove) {
-                showMessage('error', 'Candidate not found');
+            // Remove from Supabase
+            if (!supabase) {
+                showMessage('error', 'Supabase is not configured');
                 return;
             }
             
-            // Remove the candidate
-            candidates = candidates.filter(c => c.id !== id);
-            saveCandidates(candidates);
-            
-            // Also update the voting page data
-            const votingCandidates = JSON.parse(localStorage.getItem('votingCandidates') || '[]');
-            const updatedVotingCandidates = votingCandidates.filter(c => c.id !== id);
-            localStorage.setItem('votingCandidates', JSON.stringify(updatedVotingCandidates));
-            
-            renderCandidates();
-            showMessage('success', `Removed "${candidateToRemove.name}" successfully!`);
+            try {
+                const { error } = await supabase
+                    .from('candidates')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) {
+                    console.error('Error removing candidate:', error);
+                    showMessage('error', 'Error removing candidate: ' + error.message);
+                    return;
+                }
+                
+                showMessage('success', 'Candidate removed successfully!');
+                await renderCandidates();
+            } catch (err) {
+                console.error('Error removing candidate:', err);
+                showMessage('error', 'Error removing candidate');
+            }
         }
 
         // Render candidates
-        function renderCandidates() {
-            const candidates = loadCandidates();
+        async function renderCandidates() {
+            const candidates = await loadCandidates();
             const container = document.getElementById('candidatesGrid');
             
             // Update the count display
@@ -582,8 +605,7 @@
                         <p class="project">${candidate.project}</p>
                         <div class="candidate-meta">
                             <span class="candidate-id">ID: ${candidate.id}</span>
-                            <span class="candidate-votes">Votes: ${candidate.votes || 0}</span>
-                            <span class="candidate-added">Added: ${new Date(candidate.createdAt || new Date()).toLocaleDateString()}</span>
+                            <span class="candidate-added">Added: ${new Date(candidate.created_at || new Date()).toLocaleDateString()}</span>
                         </div>
                     </div>
                     <div class="candidate-actions">
@@ -596,7 +618,7 @@
         }
 
         // Form submission
-        document.getElementById('addCandidateForm').addEventListener('submit', function(e) {
+        document.getElementById('addCandidateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const nameInput = document.getElementById('candidateName');
@@ -607,7 +629,7 @@
                 project: projectInput.value.trim()
             };
             
-            if (addCandidate(candidate)) {
+            if (await addCandidate(candidate)) {
                 // Reset form on success
                 this.reset();
                 // Set focus back to name field for better UX
@@ -616,33 +638,17 @@
         });
 
         // Initialize
-        function init() {
-            // Initialize with default candidates if none exist
-            const candidates = loadCandidates();
-            if (candidates.length === 0) {
-                // Add default candidates with timestamps
-                const defaultCandidatesWithTimestamps = defaultCandidates.map(c => ({
-                    ...c,
-                    votes: 0,
-                    createdAt: new Date().toISOString()
-                }));
-                saveCandidates(defaultCandidatesWithTimestamps);
-            }
-            
-            renderCandidates();
+        async function init() {
+            await renderCandidates();
             
             // Set focus to the name field for better UX
             document.getElementById('candidateName').focus();
-
-            // Also sync with voting page data if it exists
-            const votingCandidates = localStorage.getItem('votingCandidates');
-            if (!votingCandidates) {
-                localStorage.setItem('votingCandidates', JSON.stringify(defaultCandidates));
-            }
         }
 
         // Initialize when page loads
-        window.onload = init;
+        window.onload = async function() {
+            await init();
+        };
     </script>
 </body>
 </html>

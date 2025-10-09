@@ -420,6 +420,7 @@
     </style>
 </head>
 <body>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0"></script>
     <div class="dashboard-container">
         <div class="dashboard-header">
             <h1>🏆 Impact Token Voting Dashboard</h1>
@@ -559,6 +560,20 @@
     </div>
 
     <script>
+        // Initialize Supabase with your provided credentials
+        const SUPABASE_URL = 'https://ssrxybgexgntfdvkusyw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzYwMDEsImV4cCI6MjA3NTU1MjAwMX0._4WQ4uUE9ALjtZPSG11nouFA3MBftPgeCOf1trhoFlk';
+        
+        // Initialize Supabase client
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+            supabase = null;
+        }
+        
         // Dashboard data
         let allVotes = [];
         let allVoters = [];
@@ -566,29 +581,72 @@
         let filteredVotes = [];
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadData();
             updateDashboard();
             populateCandidateFilter();
         });
 
-        // Load data from localStorage
-        function loadData() {
+        // Load data from Supabase
+        async function loadData() {
+            if (!supabase) {
+                console.error('Supabase client not initialized');
+                allVotes = [];
+                allVoters = [];
+                allCandidates = [];
+                return;
+            }
+            
             try {
-                allVotes = JSON.parse(localStorage.getItem('votes') || '[]');
-                allVoters = JSON.parse(localStorage.getItem('voters') || '[]');
-                allCandidates = JSON.parse(localStorage.getItem('candidates') || '[]');
-
-                // Sort votes by timestamp (newest first)
-                allVotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-                console.log('Loaded data:', {
+                // Load votes
+                const { data: votesData, error: votesError } = await supabase
+                    .from('votes')
+                    .select('*')
+                    .order('vote_timestamp', { ascending: false });
+                
+                if (votesError) {
+                    console.error('Error fetching votes from Supabase:', votesError);
+                    allVotes = [];
+                } else {
+                    allVotes = votesData || [];
+                }
+                
+                // Load candidates
+                const { data: candidatesData, error: candidatesError } = await supabase
+                    .from('candidates')
+                    .select('*')
+                    .order('name', { ascending: true });
+                
+                if (candidatesError) {
+                    console.error('Error fetching candidates from Supabase:', candidatesError);
+                    allCandidates = [];
+                } else {
+                    allCandidates = candidatesData || [];
+                }
+                
+                // For voters, we'll extract unique voters from votes
+                const voterMap = {};
+                allVotes.forEach(vote => {
+                    const voterKey = `${vote.voter_name}-${vote.voter_email}`;
+                    if (!voterMap[voterKey]) {
+                        voterMap[voterKey] = {
+                            name: vote.voter_name,
+                            email: vote.voter_email,
+                            voteCount: 0
+                        };
+                    }
+                    voterMap[voterKey].voteCount++;
+                });
+                
+                allVoters = Object.values(voterMap);
+                
+                console.log('Loaded data from Supabase:', {
                     votes: allVotes.length,
                     voters: allVoters.length,
                     candidates: allCandidates.length
                 });
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('Error loading data from Supabase:', error);
                 allVotes = [];
                 allVoters = [];
                 allCandidates = [];
@@ -926,8 +984,8 @@
         }
 
         // Refresh data
-        function refreshData() {
-            loadData();
+        async function refreshData() {
+            await loadData();
             updateDashboard();
         }
 
