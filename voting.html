@@ -519,14 +519,13 @@
 
         // Handle form submission
         document.getElementById('voting-form').addEventListener('submit', function(e) {
-            e.preventDefault(); // Always prevent default to handle submission manually
-            
             const firstName = document.getElementById('first-name').value;
             const lastName = document.getElementById('last-name').value;
             const email = document.getElementById('email').value;
 
             if (window.selectedCandidates.length === 0) {
                 alert('Please select at least one team member to award Impact Tokens.');
+                e.preventDefault(); // Prevent submission if validation fails
                 return;
             }
 
@@ -580,27 +579,17 @@
             // Dispatch event for real-time updates
             window.dispatchEvent(new Event('votesUpdated'));
 
-            // Submit form data to Netlify via fetch API
-            const formData = new FormData(this);
-            fetch('/', {
-                method: 'POST',
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams(formData).toString()
-            }).then(() => {
-                // Show success message
-                alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
-                
-                // Store a flag in localStorage to indicate successful submission
-                localStorage.setItem('formSubmitted', 'true');
-                
-                // Redirect to leaderboard
+            // Show success message
+            alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
+            
+            // Store a flag in localStorage to indicate successful submission
+            localStorage.setItem('formSubmitted', 'true');
+            
+            // Allow form to submit to Netlify naturally
+            // Add a small delay to ensure localStorage is saved before redirect
+            setTimeout(() => {
                 window.location.href = 'leaderboard.html';
-            }).catch((error) => {
-                // Even if Netlify submission fails, still show success and redirect
-                console.error('Error submitting to Netlify:', error);
-                alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
-                window.location.href = 'leaderboard.html';
-            });
+            }, 1000);
         });
 
         // Initialize when page loads

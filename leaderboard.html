@@ -243,15 +243,14 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="live-indicator">
+            <div class="live-indicator" id="data-status">
                 <span style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; display: inline-block;"></span>
-                LOCAL DATA (Not Global)
+                <span id="status-text">LOCAL DATA</span>
             </div>
             <h1 class="title">
                 🏆 Impact Token Leaderboard
             </h1>
-            <p class="subtitle">Real-time rankings of team members by Impact Tokens received (Local data only)</p>
-            <p class="subtitle" style="color: #ff6b6b; font-weight: 600;">Note: This leaderboard currently uses local browser data. Global/online leaderboard coming soon.</p>
+            <p class="subtitle" id="subtitle-text">Real-time rankings of team members by Impact Tokens received (Local data only)</p>
         </div>
 
         <div class="leaderboard" id="leaderboard">
@@ -261,7 +260,19 @@
         <!-- Vote Another Token button removed -->
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Initialize Supabase (you'll need to add your Supabase URL and anon key in the environment variables)
+        // For now, we'll use placeholder values that you'll need to replace with your actual Supabase credentials
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Replace with your Supabase URL
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your Supabase anon key
+        
+        // Only initialize Supabase if we have the credentials
+        let supabase;
+        if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+
         // Load candidates from localStorage or use defaults
         const defaultCandidates = [
             {
@@ -335,10 +346,62 @@
             return JSON.parse(localStorage.getItem('votes') || '[]');
         }
 
+        // Load votes from Supabase (if available)
+        async function loadVotesFromSupabase() {
+            if (!supabase) {
+                // Supabase not initialized, fall back to localStorage
+                return { votes: loadVotes(), isGlobal: false };
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('votes')
+                    .select('*')
+                    .order('vote_timestamp', { ascending: false });
+
+                if (error) {
+                    console.error('Error fetching votes from Supabase:', error);
+                    // Fall back to localStorage
+                    return { votes: loadVotes(), isGlobal: false };
+                }
+
+                // Convert Supabase data to the format expected by the leaderboard
+                const votes = data.map(vote => ({
+                    id: vote.id || Date.now().toString() + Math.random(),
+                    voterName: vote.voter_name,
+                    voterEmail: vote.voter_email,
+                    participantId: vote.candidate_id?.toString(),
+                    participantName: vote.candidate_name,
+                    timestamp: vote.vote_timestamp,
+                    valid: true
+                }));
+                
+                return { votes, isGlobal: true };
+            } catch (err) {
+                console.error('Error loading votes from Supabase:', err);
+                // Fall back to localStorage
+                return { votes: loadVotes(), isGlobal: false };
+            }
+        }
+
         // Calculate leaderboard data
-        function calculateLeaderboard() {
-            const votes = loadVotes();
+        async function calculateLeaderboard() {
+            const { votes, isGlobal } = await loadVotesFromSupabase();
             const candidates = loadCandidates();
+
+            // Update UI to show data source
+            const statusText = document.getElementById('status-text');
+            const subtitleText = document.getElementById('subtitle-text');
+            
+            if (isGlobal) {
+                statusText.textContent = 'GLOBAL DATA';
+                statusText.style.color = '#28a745';
+                subtitleText.innerHTML = 'Real-time rankings of team members by Impact Tokens received <span style="color: #28a745; font-weight: 600;">(Global data)</span>';
+            } else {
+                statusText.textContent = 'LOCAL DATA';
+                statusText.style.color = '#ff6b6b';
+                subtitleText.innerHTML = 'Real-time rankings of team members by Impact Tokens received <span style="color: #ff6b6b; font-weight: 600;">(Local data only)</span>';
+            }
 
             // Debug: Log the votes data
             console.log('Loaded votes:', votes);
@@ -373,8 +436,8 @@
         }
 
         // Render leaderboard
-        function renderLeaderboard() {
-            const data = calculateLeaderboard();
+        async function renderLeaderboard() {
+            const data = await calculateLeaderboard();
             const leaderboardDiv = document.getElementById('leaderboard');
 
             // Render leaderboard items
@@ -412,11 +475,34 @@
                 console.log('Custom votesUpdated event detected');
                 renderLeaderboard();
             });
+            
+            // Listen for Supabase real-time updates (if Supabase is available)
+            if (supabase) {
+                try {
+                    const subscription = supabase
+                        .channel('votes-changes')
+                        .on(
+                            'postgres_changes',
+                            {
+                                event: 'INSERT',
+                                schema: 'public',
+                                table: 'votes',
+                            },
+                            (payload) => {
+                                console.log('New vote detected from Supabase:', payload);
+                                renderLeaderboard();
+                            }
+                        )
+                        .subscribe();
+                } catch (err) {
+                    console.error('Error setting up Supabase real-time subscription:', err);
+                }
+            }
         }
 
         // Auto-refresh leaderboard every 5 seconds for real-time updates
-        function startAutoRefresh() {
-            renderLeaderboard();
+        async function startAutoRefresh() {
+            await renderLeaderboard();
             listenForVoteUpdates();
             setInterval(renderLeaderboard, 5000);
         }

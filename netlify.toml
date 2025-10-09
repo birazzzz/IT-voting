@@ -1,5 +1,5 @@
 [build]
-  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg thank-you.html Toshiba-teka.png votes.json voting.html public build/ && cp public/qr.png build/"
+  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg thank-you.html Toshiba-teka.png votes.json voting.html public netlify build/"
   publish = "build"
 
 # Basic SPA routing
@@ -16,5 +16,3 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-
-# Removed explicit form configuration to allow Netlify's automatic form detection
