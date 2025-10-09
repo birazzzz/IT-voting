@@ -412,15 +412,20 @@
         // Load candidates from localStorage or use defaults
         function loadCandidates() {
             const saved = localStorage.getItem('candidates');
+            let candidates;
             if (saved) {
                 try {
-                    return JSON.parse(saved);
+                    candidates = JSON.parse(saved);
                 } catch (e) {
                     console.error('Error loading candidates:', e);
-                    return defaultCandidates;
+                    candidates = defaultCandidates;
                 }
+            } else {
+                candidates = defaultCandidates;
             }
-            return defaultCandidates;
+            
+            // Sort candidates alphabetically by name
+            return candidates.sort((a, b) => a.name.localeCompare(b.name));
         }
 
         // State management
