@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Setup Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        .step {
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 0;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        .error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+        code {
+            background: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Supabase Setup Guide</h1>
+        
+        <div class="success">
+            <strong>Success!</strong> Your Supabase project is almost ready. Just follow these simple steps to complete the setup.
+        </div>
+
+        <h2>Step 1: Get Your Supabase Credentials</h2>
+        <div class="step">
+            <p>1. Go to your <a href="https://app.supabase.com/" target="_blank" class="btn">Supabase Dashboard</a></p>
+            <p>2. Select your project</p>
+            <p>3. Click on the gear icon (Settings) in the left sidebar</p>
+            <p>4. Click on "API" in the settings menu</p>
+            <p>5. Copy your project URL and anon key - you'll need them later</p>
+        </div>
+
+        <h2>Step 2: Create the Required Tables</h2>
+        
+        <h3>Table 1: Candidates</h3>
+        <div class="step">
+            <p>1. In your Supabase dashboard, click on "Table Editor" in the left sidebar</p>
+            <p>2. Click "New Table"</p>
+            <p>3. Name it <code>candidates</code></p>
+            <p>4. Add these columns:</p>
+            <ul>
+                <li><code>id</code> (int8, primary key, auto-increment)</li>
+                <li><code>name</code> (text, not null)</li>
+                <li><code>project</code> (text, not null)</li>
+                <li><code>created_at</code> (timestamptz, not null, default: now())</li>
+            </ul>
+        </div>
+
+        <h3>Table 2: Votes</h3>
+        <div class="step">
+            <p>1. In the Table Editor, click "New Table"</p>
+            <p>2. Name it <code>votes</code></p>
+            <p>3. Add these columns:</p>
+            <ul>
+                <li><code>id</code> (int8, primary key, auto-increment)</li>
+                <li><code>voter_name</code> (text, not null)</li>
+                <li><code>voter_email</code> (text, not null)</li>
+                <li><code>candidate_id</code> (int8, not null)</li>
+                <li><code>candidate_name</code> (text, not null)</li>
+                <li><code>candidate_project</code> (text, not null)</li>
+                <li><code>vote_timestamp</code> (timestamptz, not null, default: now())</li>
+            </ul>
+        </div>
+
+        <h2>Step 3: Configure Row Level Security (RLS)</h2>
+        
+        <h3>For the Candidates Table:</h3>
+        <div class="step">
+            <p>1. Click on the <code>candidates</code> table</p>
+            <p>2. Go to the "Policies" tab</p>
+            <p>3. Click "Enable RLS"</p>
+            <p>4. Click "Create Policy"</p>
+            <p>5. Select "SELECT" as the operation</p>
+            <p>6. Name it "Allow read access"</p>
+            <p>7. In the "USING expression" field, enter <code>true</code></p>
+            <p>8. Click "Save"</p>
+        </div>
+
+        <h3>For the Votes Table:</h3>
+        <div class="step">
+            <p>1. Click on the <code>votes</code> table</p>
+            <p>2. Go to the "Policies" tab</p>
+            <p>3. Click "Enable RLS"</p>
+            <p>4. Click "Create Policy"</p>
+            <p>5. Select "SELECT" as the operation</p>
+            <p>6. Name it "Allow read access"</p>
+            <p>7. In the "USING expression" field, enter <code>true</code></p>
+            <p>8. Click "Save"</p>
+            <p>9. Click "Create Policy" again</p>
+            <p>10. Select "INSERT" as the operation</p>
+            <p>11. Name it "Allow insert for everyone"</p>
+            <p>12. In the "WITH CHECK expression" field, enter <code>true</code></p>
+            <p>13. Click "Save"</p>
+        </div>
+
+        <h2>Step 4: Update Your Application</h2>
+        <div class="step">
+            <p>Make sure your application is using the correct Supabase credentials:</p>
+            <ul>
+                <li><strong>Supabase URL</strong>: <code>https://ssrxybgexgntfdvkusyw.supabase.co</code></li>
+                <li><strong>Supabase Anon Key</strong>: <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzYwMDEsImV4cCI6MjA3NTU1MjAwMX0._4WQ4uUE9ALjtZPSG11nouFA3MBftPgeCOf1trhoFlk</code></li>
+            </ul>
+        </div>
+
+        <h2>Step 5: Test the Setup</h2>
+        <div class="step">
+            <p>1. Open <a href="test-supabase.html" class="btn">Test Supabase Connection</a> in your browser</p>
+            <p>2. Click "Test Connection" - it should succeed</p>
+            <p>3. Click "Test Select" - it should return an empty array</p>
+            <p>4. Open <a href="admin.html" class="btn">Admin Panel</a> and click "Test Connection"</p>
+        </div>
+
+        <div class="warning">
+            <strong>Important:</strong> After completing these steps, refresh your admin page to clear any cached error messages.
+        </div>
+
+        <h2>Need Help?</h2>
+        <div class="step">
+            <p>If you're still having issues:</p>
+            <ol>
+                <li>Open <a href="test-supabase.html">test-supabase.html</a> and click all three test buttons</li>
+                <li>Check the browser console (F12) for detailed error messages</li>
+                <li>Copy the error messages and ask for help</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

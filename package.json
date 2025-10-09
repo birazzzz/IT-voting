@@ -5,7 +5,11 @@
   "main": "server-local.js",
   "scripts": {
     "start": "node server-local.js",
-    "dev": "node server-local.js"
+    "dev": "node server-local.js",
+    "setup": "node init-supabase.js",
+    "supabase:dashboard": "node open-supabase-dashboard.js",
+    "supabase:test": "open test-supabase.html || xdg-open test-supabase.html || start test-supabase.html",
+    "supabase:guide": "open supabase-setup-guide.html || xdg-open supabase-setup-guide.html || start supabase-setup-guide.html"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0"

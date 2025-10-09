@@ -368,9 +368,11 @@
 
         <div class="form-section">
             <h2>🔧 Database Setup</h2>
-            <p>If you see "table not found" errors, click the buttons below:</p>
-            <button class="btn btn-primary" onclick="createSupabaseTables()" style="margin-right: 10px;">Create Supabase Tables</button>
-            <button class="btn btn-secondary" onclick="testSupabaseConnection()">Test Connection</button>
+            <p>If you see "table not found" errors, it's likely due to Row Level Security (RLS) configuration.</p>
+            <p><strong>Solution:</strong> Enable RLS on your tables and create policies with "true" as the expression.</p>
+            <button class="btn btn-primary" onclick="createSupabaseTables()" style="margin-right: 10px;">🔧 Setup Instructions</button>
+            <button class="btn btn-secondary" onclick="testSupabaseConnection()">✅ Test Connection</button>
+            <button class="btn btn-secondary" onclick="window.open('supabase-setup-guide.html', '_blank')" style="margin-left: 10px;">📖 Setup Guide</button>
         </div>
 
         <div class="form-section">
