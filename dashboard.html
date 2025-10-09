@@ -606,9 +606,25 @@
                 
                 if (votesError) {
                     console.error('Error fetching votes from Supabase:', votesError);
-                    // Check if it's a table not found error
-                    if (votesError.message && votesError.message.includes('votes')) {
+                    // Check for table not found
+                    if (votesError.message && 
+                        votesError.message.includes('votes') && 
+                        (votesError.message.includes('not found') || 
+                         votesError.message.includes('does not exist') ||
+                         votesError.message.includes('relation') ||
+                         votesError.message.includes('undefined_table'))) {
                         console.error('Votes table not found in Supabase. Please create the table first.');
+                    }
+                    // Check for RLS/permission errors
+                    else if (votesError.message && 
+                             (votesError.message.includes('permission') || 
+                              votesError.message.includes('denied') ||
+                              votesError.message.includes('row-level security') ||
+                              votesError.message.includes('42501'))) {
+                        console.error('Permission denied. Please check Row Level Security (RLS) policies in Supabase.');
+                    }
+                    else {
+                        console.error('Error fetching votes: ' + (votesError.message || 'Unknown error'));
                     }
                     allVotes = [];
                 } else {
@@ -623,9 +639,25 @@
                 
                 if (candidatesError) {
                     console.error('Error fetching candidates from Supabase:', candidatesError);
-                    // Check if it's a table not found error
-                    if (candidatesError.message && candidatesError.message.includes('candidates')) {
+                    // Check for table not found
+                    if (candidatesError.message && 
+                        candidatesError.message.includes('candidates') && 
+                        (candidatesError.message.includes('not found') || 
+                         candidatesError.message.includes('does not exist') ||
+                         candidatesError.message.includes('relation') ||
+                         candidatesError.message.includes('undefined_table'))) {
                         console.error('Candidates table not found in Supabase. Please create the table first.');
+                    }
+                    // Check for RLS/permission errors
+                    else if (candidatesError.message && 
+                             (candidatesError.message.includes('permission') || 
+                              candidatesError.message.includes('denied') ||
+                              candidatesError.message.includes('row-level security') ||
+                              candidatesError.message.includes('42501'))) {
+                        console.error('Permission denied. Please check Row Level Security (RLS) policies in Supabase.');
+                    }
+                    else {
+                        console.error('Error fetching candidates: ' + (candidatesError.message || 'Unknown error'));
                     }
                     allCandidates = [];
                 } else {

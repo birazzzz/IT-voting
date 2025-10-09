@@ -294,9 +294,27 @@
                 
                 if (error) {
                     console.error('Error fetching candidates from Supabase:', error);
-                    // Check if it's a table not found error
-                    if (error.message && error.message.includes('candidates')) {
-                        console.error('Candidates table not found in Supabase. Please create the table first.');
+                    // More specific error handling
+                    if (error.message) {
+                        console.error('Error message:', error.message);
+                        // Check for table not found
+                        if (error.message.includes('candidates') && 
+                            (error.message.includes('not found') || 
+                             error.message.includes('does not exist') ||
+                             error.message.includes('relation') ||
+                             error.message.includes('undefined_table'))) {
+                            console.error('Candidates table not found in Supabase. Please create the table first.');
+                        }
+                        // Check for RLS/permission errors
+                        else if (error.message.includes('permission') || 
+                                 error.message.includes('denied') ||
+                                 error.message.includes('row-level security') ||
+                                 error.message.includes('42501')) {
+                            console.error('Permission denied. Please check Row Level Security (RLS) policies in Supabase.');
+                        }
+                        else {
+                            console.error('Error fetching candidates: ' + error.message);
+                        }
                     }
                     return defaultCandidates;
                 }
@@ -332,9 +350,25 @@
 
                 if (error) {
                     console.error('Error fetching votes from Supabase:', error);
-                    // Check if it's a table not found error
-                    if (error.message && error.message.includes('votes')) {
+                    // Check for table not found
+                    if (error.message && 
+                        error.message.includes('votes') && 
+                        (error.message.includes('not found') || 
+                         error.message.includes('does not exist') ||
+                         error.message.includes('relation') ||
+                         error.message.includes('undefined_table'))) {
                         console.error('Votes table not found in Supabase. Please create the table first.');
+                    }
+                    // Check for RLS/permission errors
+                    else if (error.message && 
+                             (error.message.includes('permission') || 
+                              error.message.includes('denied') ||
+                              error.message.includes('row-level security') ||
+                              error.message.includes('42501'))) {
+                        console.error('Permission denied. Please check Row Level Security (RLS) policies in Supabase.');
+                    }
+                    else {
+                        console.error('Error fetching votes: ' + (error.message || 'Unknown error'));
                     }
                     // Return empty data but still indicate it's global data
                     return { votes: [], isGlobal: true };

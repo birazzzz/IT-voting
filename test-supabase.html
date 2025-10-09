@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0"></script>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <button onclick="testConnection()">Test Connection</button>
+    <button onclick="testInsert()">Test Insert</button>
+    <button onclick="testSelect()">Test Select</button>
+    <div id="output"></div>
+
+    <script>
+        // Initialize Supabase with your provided credentials
+        const SUPABASE_URL = 'https://ssrxybgexgntfdvkusyw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzYwMDEsImV4cCI6MjA3NTU1MjAwMX0._4WQ4uUE9ALjtZPSG11nouFA3MBftPgeCOf1trhoFlk';
+        
+        // Initialize Supabase client
+        let supabase;
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+            document.getElementById('output').innerHTML += '<p>Supabase client initialized successfully</p>';
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+            document.getElementById('output').innerHTML += '<p>Error initializing Supabase client: ' + error.message + '</p>';
+            supabase = null;
+        }
+
+        async function testConnection() {
+            if (!supabase) {
+                document.getElementById('output').innerHTML += '<p>Supabase not initialized</p>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('candidates')
+                    .select('id')
+                    .limit(1);
+
+                if (error) {
+                    document.getElementById('output').innerHTML += '<p>Connection test error: ' + error.message + '</p>';
+                    console.error('Connection test error:', error);
+                } else {
+                    document.getElementById('output').innerHTML += '<p>Connection test successful. Found candidates table.</p>';
+                    console.log('Connection test successful. Found candidates table.');
+                }
+            } catch (err) {
+                document.getElementById('output').innerHTML += '<p>Connection test failed: ' + err.message + '</p>';
+                console.error('Connection test failed:', err);
+            }
+        }
+
+        async function testInsert() {
+            if (!supabase) {
+                document.getElementById('output').innerHTML += '<p>Supabase not initialized</p>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('candidates')
+                    .insert([{ name: 'Test Candidate', project: 'Test Project' }]);
+
+                if (error) {
+                    document.getElementById('output').innerHTML += '<p>Insert test error: ' + error.message + '</p>';
+                    console.error('Insert test error:', error);
+                } else {
+                    document.getElementById('output').innerHTML += '<p>Insert test successful.</p>';
+                    console.log('Insert test successful.');
+                }
+            } catch (err) {
+                document.getElementById('output').innerHTML += '<p>Insert test failed: ' + err.message + '</p>';
+                console.error('Insert test failed:', err);
+            }
+        }
+
+        async function testSelect() {
+            if (!supabase) {
+                document.getElementById('output').innerHTML += '<p>Supabase not initialized</p>';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('candidates')
+                    .select('*');
+
+                if (error) {
+                    document.getElementById('output').innerHTML += '<p>Select test error: ' + error.message + '</p>';
+                    console.error('Select test error:', error);
+                } else {
+                    document.getElementById('output').innerHTML += '<p>Select test successful. Found ' + (data ? data.length : 0) + ' candidates.</p>';
+                    console.log('Select test successful. Found ' + (data ? data.length : 0) + ' candidates.');
+                }
+            } catch (err) {
+                document.getElementById('output').innerHTML += '<p>Select test failed: ' + err.message + '</p>';
+                console.error('Select test failed:', err);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -368,8 +368,9 @@
 
         <div class="form-section">
             <h2>🔧 Database Setup</h2>
-            <p>If you see "table not found" errors, click the button below to create the required tables in Supabase:</p>
-            <button class="btn btn-primary" onclick="createSupabaseTables()">Create Supabase Tables</button>
+            <p>If you see "table not found" errors, click the buttons below:</p>
+            <button class="btn btn-primary" onclick="createSupabaseTables()" style="margin-right: 10px;">Create Supabase Tables</button>
+            <button class="btn btn-secondary" onclick="testSupabaseConnection()">Test Connection</button>
         </div>
 
         <div class="form-section">
@@ -406,10 +407,12 @@
 
     <script>
         // Initialize Supabase with your provided credentials
+        // Using service role key for admin operations (more permissive)
         const SUPABASE_URL = 'https://ssrxybgexgntfdvkusyw.supabase.co';
+        const SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTk3NjAwMSwiZXhwIjoyMDc1NTUyMDAxfQ.9J9zX8zX8zX8zX8zX8zX8zX8zX8zX8zX8zX8zX8zX8'; // Replace with actual service role key if available
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzYwMDEsImV4cCI6MjA3NTU1MjAwMX0._4WQ4uUE9ALjtZPSG11nouFA3MBftPgeCOf1trhoFlk';
         
-        // Initialize Supabase client
+        // Initialize Supabase client with anon key for read operations
         let supabase;
         try {
             supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -437,9 +440,30 @@
                 
                 if (error) {
                     console.error('Error fetching candidates from Supabase:', error);
+                    console.error('Full error details:', JSON.stringify(error, null, 2));
                     // Check if it's a table not found error
-                    if (error.message && error.message.includes('candidates')) {
-                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    if (error.message) {
+                        console.error('Error message:', error.message);
+                        // More specific check for table not found
+                        if (error.message.includes('candidates') && 
+                            (error.message.includes('not found') || 
+                             error.message.includes('does not exist') ||
+                             error.message.includes('relation') ||
+                             error.message.includes('undefined_table'))) {
+                            showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                        } 
+                        // Check for RLS/permission errors
+                        else if (error.message.includes('permission') || 
+                                 error.message.includes('denied') ||
+                                 error.message.includes('row-level security') ||
+                                 error.message.includes('42501')) {
+                            showMessage('error', 'Permission denied. Please check Row Level Security (RLS) policies in Supabase for the candidates table.');
+                        }
+                        else {
+                            showMessage('error', 'Error fetching candidates: ' + error.message);
+                        }
+                    } else {
+                        showMessage('error', 'Unknown error fetching candidates from Supabase.');
                     }
                     return defaultCandidates;
                 }
@@ -468,9 +492,30 @@
                 
                 if (deleteError) {
                     console.error('Error clearing candidates:', deleteError);
+                    console.error('Full error details:', JSON.stringify(deleteError, null, 2));
                     // Check if it's a table not found error
-                    if (deleteError.message && deleteError.message.includes('candidates')) {
-                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    if (deleteError.message) {
+                        console.error('Error message:', deleteError.message);
+                        // More specific check for table not found
+                        if (deleteError.message.includes('candidates') && 
+                            (deleteError.message.includes('not found') || 
+                             deleteError.message.includes('does not exist') ||
+                             deleteError.message.includes('relation') ||
+                             deleteError.message.includes('undefined_table'))) {
+                            showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                        }
+                        // Check for RLS/permission errors
+                        else if (deleteError.message.includes('permission') || 
+                                 deleteError.message.includes('denied') ||
+                                 deleteError.message.includes('row-level security') ||
+                                 deleteError.message.includes('42501')) {
+                            showMessage('error', 'Permission denied. Please check Row Level Security (RLS) policies in Supabase for the candidates table.');
+                        }
+                        else {
+                            showMessage('error', 'Error clearing candidates: ' + deleteError.message);
+                        }
+                    } else {
+                        showMessage('error', 'Unknown error clearing candidates from Supabase.');
                     }
                     return false;
                 }
@@ -483,9 +528,30 @@
                     
                     if (insertError) {
                         console.error('Error saving candidates:', insertError);
+                        console.error('Full error details:', JSON.stringify(insertError, null, 2));
                         // Check if it's a table not found error
-                        if (insertError.message && insertError.message.includes('candidates')) {
-                            showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                        if (insertError.message) {
+                            console.error('Error message:', insertError.message);
+                            // More specific check for table not found
+                            if (insertError.message.includes('candidates') && 
+                                (insertError.message.includes('not found') || 
+                                 insertError.message.includes('does not exist') ||
+                                 insertError.message.includes('relation') ||
+                                 insertError.message.includes('undefined_table'))) {
+                                showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                            }
+                            // Check for RLS/permission errors
+                            else if (insertError.message.includes('permission') || 
+                                     insertError.message.includes('denied') ||
+                                     insertError.message.includes('row-level security') ||
+                                     insertError.message.includes('42501')) {
+                                showMessage('error', 'Permission denied. Please check Row Level Security (RLS) policies in Supabase for the candidates table.');
+                            }
+                            else {
+                                showMessage('error', 'Error saving candidates: ' + insertError.message);
+                            }
+                        } else {
+                            showMessage('error', 'Unknown error saving candidates to Supabase.');
                         }
                         return false;
                     }
@@ -520,7 +586,7 @@
         // Show Supabase table creation instructions
         function createSupabaseTables() {
             const instructions = `
-To create the required tables in Supabase, please follow these steps:
+To create the required tables in Supabase and configure them properly, please follow these steps:
 
 1. Go to your Supabase project dashboard
 2. Navigate to Table Editor
@@ -539,13 +605,75 @@ To create the required tables in Supabase, please follow these steps:
    - candidate_project (text)
    - vote_timestamp (timestamptz, default: now())
 
-5. After creating the tables, refresh this page and try adding candidates.
+5. Enable Row Level Security (RLS) for both tables:
+   - Click on the "candidates" table
+   - Go to "Policies" tab
+   - Click "Enable RLS"
+   - Create a policy for SELECT (read access):
+     * Name: "Allow read access for everyone"
+     * Operation: SELECT
+     * USING expression: (true)
+   - Create a policy for INSERT (write access) if needed for admin operations
+
+6. For the "votes" table, also enable RLS and create a SELECT policy with USING expression: (true)
+
+7. After creating the tables and policies, refresh this page and try adding candidates.
             `;
             
             alert(instructions);
             
             // Also show in the error message area
-            showMessage('error', 'Please create the required tables in Supabase. Click "Create Supabase Tables" button for instructions.');
+            showMessage('error', 'Please create the required tables in Supabase and configure Row Level Security (RLS). Click "Create Supabase Tables" button for instructions.');
+        }
+
+        // Test Supabase connection and list tables
+        async function testSupabaseConnection() {
+            if (!supabase) {
+                showMessage('error', 'Supabase is not configured');
+                return;
+            }
+            
+            try {
+                // Try to list tables
+                console.log('Testing Supabase connection...');
+                
+                // Try a simple query to see what tables exist
+                const { data, error } = await supabase
+                    .from('candidates')
+                    .select('id')
+                    .limit(1);
+                
+                if (error) {
+                    console.error('Connection test error:', error);
+                    console.error('Full error details:', JSON.stringify(error, null, 2));
+                    // More specific check for table not found
+                    if (error.message && 
+                        error.message.includes('candidates') && 
+                        (error.message.includes('not found') || 
+                         error.message.includes('does not exist') ||
+                         error.message.includes('relation') ||
+                         error.message.includes('undefined_table'))) {
+                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    }
+                    // Check for RLS/permission errors
+                    else if (error.message && 
+                             (error.message.includes('permission') || 
+                              error.message.includes('denied') ||
+                              error.message.includes('row-level security') ||
+                              error.message.includes('42501'))) {
+                        showMessage('error', 'Permission denied. Please check Row Level Security (RLS) policies in Supabase for the candidates table.');
+                    }
+                    else {
+                        showMessage('error', 'Connection test failed: ' + (error.message || 'Unknown error'));
+                    }
+                } else {
+                    console.log('Connection test successful. Found candidates table.');
+                    showMessage('success', 'Connection test successful! Candidates table is accessible.');
+                }
+            } catch (err) {
+                console.error('Connection test failed:', err);
+                showMessage('error', 'Connection test failed. Check console for details.');
+            }
         }
 
         // Add new candidate
@@ -589,11 +717,30 @@ To create the required tables in Supabase, please follow these steps:
                 
                 if (error) {
                     console.error('Error adding candidate:', error);
+                    console.error('Full error details:', JSON.stringify(error, null, 2));
                     // Check if it's a table not found error
-                    if (error.message && error.message.includes('candidates')) {
-                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    if (error.message) {
+                        console.error('Error message:', error.message);
+                        // More specific check for table not found
+                        if (error.message.includes('candidates') && 
+                            (error.message.includes('not found') || 
+                             error.message.includes('does not exist') ||
+                             error.message.includes('relation') ||
+                             error.message.includes('undefined_table'))) {
+                            showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                        }
+                        // Check for RLS/permission errors
+                        else if (error.message.includes('permission') || 
+                                 error.message.includes('denied') ||
+                                 error.message.includes('row-level security') ||
+                                 error.message.includes('42501')) {
+                            showMessage('error', 'Permission denied. Please check Row Level Security (RLS) policies in Supabase for the candidates table.');
+                        }
+                        else {
+                            showMessage('error', 'Error adding candidate: ' + error.message);
+                        }
                     } else {
-                        showMessage('error', 'Error adding candidate: ' + error.message);
+                        showMessage('error', 'Unknown error adding candidate to Supabase.');
                     }
                     return false;
                 }
@@ -629,11 +776,30 @@ To create the required tables in Supabase, please follow these steps:
                 
                 if (error) {
                     console.error('Error removing candidate:', error);
+                    console.error('Full error details:', JSON.stringify(error, null, 2));
                     // Check if it's a table not found error
-                    if (error.message && error.message.includes('candidates')) {
-                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    if (error.message) {
+                        console.error('Error message:', error.message);
+                        // More specific check for table not found
+                        if (error.message.includes('candidates') && 
+                            (error.message.includes('not found') || 
+                             error.message.includes('does not exist') ||
+                             error.message.includes('relation') ||
+                             error.message.includes('undefined_table'))) {
+                            showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                        }
+                        // Check for RLS/permission errors
+                        else if (error.message.includes('permission') || 
+                                 error.message.includes('denied') ||
+                                 error.message.includes('row-level security') ||
+                                 error.message.includes('42501')) {
+                            showMessage('error', 'Permission denied. Please check Row Level Security (RLS) policies in Supabase for the candidates table.');
+                        }
+                        else {
+                            showMessage('error', 'Error removing candidate: ' + error.message);
+                        }
                     } else {
-                        showMessage('error', 'Error removing candidate: ' + error.message);
+                        showMessage('error', 'Unknown error removing candidate from Supabase.');
                     }
                     return;
                 }
