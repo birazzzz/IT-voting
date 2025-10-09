@@ -1,5 +1,5 @@
 [build]
-  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg thank-you.html Toshiba-teka.png votes.json voting.html public netlify build/"
+  command = "mkdir -p build && cp -r _headers _redirects admin.html dashboard.html favicon.png index.html leaderboard.html logo.svg thank-you.html Toshiba-teka.png votes.json voting.html public netlify package.json build/"
   publish = "build"
 
 # Basic SPA routing
