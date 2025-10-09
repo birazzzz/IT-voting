@@ -828,17 +828,19 @@ To create the required tables in Supabase and configure them properly, please fo
             }
 
             container.innerHTML = candidates.map(candidate => `
-                <div class="candidate-item">
-                    <div class="candidate-info">
-                        <h3>${candidate.name}</h3>
-                        <p class="project">${candidate.project}</p>
-                        <div class="candidate-meta">
-                            <span class="candidate-id">ID: ${candidate.id}</span>
-                            <span class="candidate-added">Added: ${new Date(candidate.created_at || new Date()).toLocaleDateString()}</span>
+                <div class="candidate-card">
+                    <div class="candidate-header">
+                        <div>
+                            <div class="candidate-name">${candidate.name}</div>
+                            <div class="candidate-project">${candidate.project}</div>
                         </div>
+                        <div class="candidate-id">ID: ${candidate.id}</div>
+                    </div>
+                    <div class="candidate-description">
+                        Added: ${new Date(candidate.created_at || new Date()).toLocaleDateString()}
                     </div>
                     <div class="candidate-actions">
-                        <button class="btn btn-danger" onclick="removeCandidate(${candidate.id})" title="Remove candidate">
+                        <button class="btn btn-danger btn-small" onclick="removeCandidate(${candidate.id})" title="Remove candidate">
                             🗑️ Remove
                         </button>
                     </div>
