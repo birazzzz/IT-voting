@@ -245,12 +245,12 @@
         <div class="header">
             <div class="live-indicator" id="data-status">
                 <span style="width: 8px; height: 8px; background: #28a745; border-radius: 50%; display: inline-block;"></span>
-                <span id="status-text">LOCAL DATA</span>
+                <span id="status-text">GLOBAL DATA</span>
             </div>
             <h1 class="title">
                 🏆 Impact Token Leaderboard
             </h1>
-            <p class="subtitle" id="subtitle-text">Real-time rankings of team members by Impact Tokens received (Local data only)</p>
+            <p class="subtitle" id="subtitle-text">Real-time rankings of team members by Impact Tokens received <span style="color: #28a745; font-weight: 600;">(Global data)</span></p>
         </div>
 
         <div class="leaderboard" id="leaderboard">
@@ -262,17 +262,20 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Initialize Supabase (you'll need to add your Supabase URL and anon key in the environment variables)
-        // For now, we'll use placeholder values that you'll need to replace with your actual Supabase credentials
-        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // Replace with your Supabase URL
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Replace with your Supabase anon key
+        // Initialize Supabase with your provided credentials
+        const SUPABASE_URL = 'https://ssrxybgexgntfdvkusyw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzYwMDEsImV4cCI6MjA3NTU1MjAwMX0._4WQ4uUE9ALjtZPSG11nouFA3MBftPgeCOf1trhoFlk';
         
-        // Only initialize Supabase if we have the credentials
+        // Initialize Supabase client
         let supabase;
-        if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+        try {
             supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+            supabase = null;
         }
-
+        
         // Load candidates from localStorage or use defaults
         const defaultCandidates = [
             {
@@ -346,14 +349,18 @@
             return JSON.parse(localStorage.getItem('votes') || '[]');
         }
 
-        // Load votes from Supabase (if available)
+        // Load votes from Supabase
         async function loadVotesFromSupabase() {
+            // Always use Supabase since we have hardcoded credentials
             if (!supabase) {
-                // Supabase not initialized, fall back to localStorage
-                return { votes: loadVotes(), isGlobal: false };
+                console.error('Supabase client not initialized');
+                // Even if there was an initialization error, we still want to return empty data
+                // rather than falling back to localStorage
+                return { votes: [], isGlobal: true };
             }
 
             try {
+                console.log('Fetching votes from Supabase...');
                 const { data, error } = await supabase
                     .from('votes')
                     .select('*')
@@ -361,10 +368,12 @@
 
                 if (error) {
                     console.error('Error fetching votes from Supabase:', error);
-                    // Fall back to localStorage
-                    return { votes: loadVotes(), isGlobal: false };
+                    // Return empty data but still indicate it's global data
+                    return { votes: [], isGlobal: true };
                 }
 
+                console.log(`Successfully fetched ${data.length} votes from Supabase`);
+                
                 // Convert Supabase data to the format expected by the leaderboard
                 const votes = data.map(vote => ({
                     id: vote.id || Date.now().toString() + Math.random(),
@@ -379,8 +388,8 @@
                 return { votes, isGlobal: true };
             } catch (err) {
                 console.error('Error loading votes from Supabase:', err);
-                // Fall back to localStorage
-                return { votes: loadVotes(), isGlobal: false };
+                // Return empty data but still indicate it's global data
+                return { votes: [], isGlobal: true };
             }
         }
 
@@ -389,19 +398,13 @@
             const { votes, isGlobal } = await loadVotesFromSupabase();
             const candidates = loadCandidates();
 
-            // Update UI to show data source
+            // Update UI to show data source (always global now)
             const statusText = document.getElementById('status-text');
             const subtitleText = document.getElementById('subtitle-text');
             
-            if (isGlobal) {
-                statusText.textContent = 'GLOBAL DATA';
-                statusText.style.color = '#28a745';
-                subtitleText.innerHTML = 'Real-time rankings of team members by Impact Tokens received <span style="color: #28a745; font-weight: 600;">(Global data)</span>';
-            } else {
-                statusText.textContent = 'LOCAL DATA';
-                statusText.style.color = '#ff6b6b';
-                subtitleText.innerHTML = 'Real-time rankings of team members by Impact Tokens received <span style="color: #ff6b6b; font-weight: 600;">(Local data only)</span>';
-            }
+            statusText.textContent = 'GLOBAL DATA';
+            statusText.style.color = '#28a745';
+            subtitleText.innerHTML = 'Real-time rankings of team members by Impact Tokens received <span style="color: #28a745; font-weight: 600;">(Global data)</span>';
 
             // Debug: Log the votes data
             console.log('Loaded votes:', votes);
@@ -505,6 +508,7 @@
             await renderLeaderboard();
             listenForVoteUpdates();
             setInterval(renderLeaderboard, 5000);
+            // No need to check Supabase setup since we're using hardcoded credentials
         }
 
         // Initialize when page loads

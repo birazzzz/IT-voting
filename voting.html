@@ -299,14 +299,8 @@
         <h1 class="title">Award Impact Tokens</h1>
         <p class="subtitle">Select team members and their projects to recognize with Impact Tokens</p>
 
-        <form id="voting-form" name="voting" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+        <form id="voting-form">
 
-            <!-- Honeypot field for spam protection -->
-            <div style="display: none;">
-                <label>
-                    Don't fill this out if you're human: <input name="bot-field" />
-                </label>
-            </div>
             <div class="form-section">
                 <h2 style="text-align: center; margin-bottom: 24px; color: #222;">Your Information</h2>
                 <div class="form-row">
@@ -354,7 +348,21 @@
         </form>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Initialize Supabase with your provided credentials
+        const SUPABASE_URL = 'https://ssrxybgexgntfdvkusyw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzYwMDEsImV4cCI6MjA3NTU1MjAwMX0._4WQ4uUE9ALjtZPSG11nouFA3MBftPgeCOf1trhoFlk';
+        
+        // Initialize Supabase client
+        let supabase;
+        try {
+            supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Supabase client:', error);
+        }
+
         // Load candidates from localStorage or use defaults
         const defaultCandidates = [
             {
@@ -517,8 +525,53 @@
             submitBtn.disabled = window.selectedCandidates.length === 0;
         }
 
+        // Submit vote to Supabase
+        async function submitVoteToSupabase(firstName, lastName, email) {
+            if (!supabase) {
+                alert('Supabase is not configured. Please set up Supabase credentials.');
+                return false;
+            }
+
+            try {
+                const votes = [];
+                const voterName = `${firstName} ${lastName}`;
+
+                // Create vote records for each selected candidate
+                for (const candidate of window.selectedCandidates) {
+                    votes.push({
+                        voter_name: voterName,
+                        voter_email: email,
+                        candidate_id: candidate.id,
+                        candidate_name: candidate.name,
+                        candidate_project: candidate.project,
+                        vote_timestamp: new Date().toISOString()
+                    });
+                }
+
+                // Insert all votes
+                const { data, error } = await supabase
+                    .from('votes')
+                    .insert(votes);
+
+                if (error) {
+                    console.error('Error submitting votes to Supabase:', error);
+                    alert('Error submitting votes. Please try again.');
+                    return false;
+                }
+
+                console.log(`Successfully submitted ${votes.length} votes to Supabase`);
+                return true;
+            } catch (error) {
+                console.error('Error submitting votes:', error);
+                alert('Error submitting votes. Please try again.');
+                return false;
+            }
+        }
+
         // Handle form submission
-        document.getElementById('voting-form').addEventListener('submit', function(e) {
+        document.getElementById('voting-form').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Prevent default form submission
+            
             const firstName = document.getElementById('first-name').value;
             const lastName = document.getElementById('last-name').value;
             const email = document.getElementById('email').value;
@@ -526,7 +579,6 @@
 
             if (window.selectedCandidates.length === 0) {
                 alert('Please select at least one team member to award Impact Tokens.');
-                e.preventDefault(); // Prevent submission if validation fails
                 return;
             }
 
@@ -534,80 +586,56 @@
             submitBtn.disabled = true;
             submitBtn.textContent = 'Submitting...';
 
-            // Create hidden fields for selected candidates
-            const hiddenFieldsContainer = document.getElementById('hidden-fields');
-            hiddenFieldsContainer.innerHTML = '';
+            // Submit vote to Supabase
+            const success = await submitVoteToSupabase(firstName, lastName, email);
 
-            window.selectedCandidates.forEach((candidate, index) => {
-                const candidateData = `
-                    <input type="hidden" name="candidate_${index}_id" value="${candidate.id}">
-                    <input type="hidden" name="candidate_${index}_name" value="${candidate.name}">
-                    <input type="hidden" name="candidate_${index}_project" value="${candidate.project}">
-                `;
-                hiddenFieldsContainer.insertAdjacentHTML('beforeend', candidateData);
-            });
-
-            // Add total count
-            hiddenFieldsContainer.insertAdjacentHTML('beforeend',
-                `<input type="hidden" name="totalCandidates" value="${window.selectedCandidates.length}">`
-            );
-
-            // Save to localStorage for leaderboard (this won't affect Netlify form submission)
-            const existingVotes = JSON.parse(localStorage.getItem('votes') || '[]');
-            const existingVoters = JSON.parse(localStorage.getItem('voters') || '[]');
-            
-            window.selectedCandidates.forEach(candidate => {
-                const vote = {
-                    id: Date.now().toString() + Math.random(),
-                    voterName: `${firstName} ${lastName}`,
-                    voterEmail: email,
-                    participantId: candidate.id.toString(),
-                    participantName: candidate.name,
-                    timestamp: new Date().toISOString(),
-                    valid: true
-                };
-
-                const voter = {
-                    name: `${firstName} ${lastName}`,
-                    email: email,
-                    participantId: candidate.id.toString(),
-                    timestamp: vote.timestamp
-                };
-
-                existingVotes.push(vote);
-                existingVoters.push(voter);
-            });
-
-            localStorage.setItem('votes', JSON.stringify(existingVotes));
-            localStorage.setItem('voters', JSON.stringify(existingVoters));
-
-            // Dispatch event for real-time updates
-            window.dispatchEvent(new Event('votesUpdated'));
-
-            // Show success message
-            alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
-            
-            // Store a flag in localStorage to indicate successful submission
-            localStorage.setItem('formSubmitted', 'true');
-            
-            // Check if we're running locally or on Netlify
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                // For local testing, show a message and redirect
-                console.log('Form would be submitted to Netlify in production');
-                console.log('Redirecting to leaderboard...');
+            if (success) {
+                // Show success message
+                alert(`Thank you ${firstName} ${lastName}! You've successfully awarded Impact Tokens to ${window.selectedCandidates.length} team member(s).`);
                 
-                // Redirect after a delay
+                // Store a flag in localStorage to indicate successful submission
+                localStorage.setItem('formSubmitted', 'true');
+                
+                // Update localStorage for leaderboard (this won't affect Supabase form submission)
+                const existingVotes = JSON.parse(localStorage.getItem('votes') || '[]');
+                const existingVoters = JSON.parse(localStorage.getItem('voters') || '[]');
+                
+                window.selectedCandidates.forEach(candidate => {
+                    const vote = {
+                        id: Date.now().toString() + Math.random(),
+                        voterName: `${firstName} ${lastName}`,
+                        voterEmail: email,
+                        participantId: candidate.id.toString(),
+                        participantName: candidate.name,
+                        timestamp: new Date().toISOString(),
+                        valid: true
+                    };
+
+                    const voter = {
+                        name: `${firstName} ${lastName}`,
+                        email: email,
+                        participantId: candidate.id.toString(),
+                        timestamp: vote.timestamp
+                    };
+
+                    existingVotes.push(vote);
+                    existingVoters.push(voter);
+                });
+
+                localStorage.setItem('votes', JSON.stringify(existingVotes));
+                localStorage.setItem('voters', JSON.stringify(existingVoters));
+
+                // Dispatch event for real-time updates
+                window.dispatchEvent(new Event('votesUpdated'));
+                
+                // Redirect to leaderboard after a delay
                 setTimeout(() => {
                     window.location.href = 'leaderboard.html';
-                }, 2000);
+                }, 2000); // 2 second delay as per requirements
             } else {
-                // On Netlify, allow natural form submission
-                // But redirect after a delay to ensure Netlify processes the data
-                setTimeout(() => {
-                    window.location.href = 'leaderboard.html';
-                }, 2000); // 2 second delay as per best practices
-                
-                // Don't prevent default - let the form submit to Netlify
+                // Re-enable submit button if submission failed
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Give Impact Token';
             }
         });
 
