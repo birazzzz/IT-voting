@@ -522,12 +522,17 @@
             const firstName = document.getElementById('first-name').value;
             const lastName = document.getElementById('last-name').value;
             const email = document.getElementById('email').value;
+            const submitBtn = document.getElementById('submit-btn');
 
             if (window.selectedCandidates.length === 0) {
                 alert('Please select at least one team member to award Impact Tokens.');
                 e.preventDefault(); // Prevent submission if validation fails
                 return;
             }
+
+            // Update button to show submission is happening
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
 
             // Create hidden fields for selected candidates
             const hiddenFieldsContainer = document.getElementById('hidden-fields');
@@ -585,11 +590,25 @@
             // Store a flag in localStorage to indicate successful submission
             localStorage.setItem('formSubmitted', 'true');
             
-            // Allow form to submit to Netlify naturally
-            // Add a small delay to ensure localStorage is saved before redirect
-            setTimeout(() => {
-                window.location.href = 'leaderboard.html';
-            }, 1000);
+            // Check if we're running locally or on Netlify
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                // For local testing, show a message and redirect
+                console.log('Form would be submitted to Netlify in production');
+                console.log('Redirecting to leaderboard...');
+                
+                // Redirect after a delay
+                setTimeout(() => {
+                    window.location.href = 'leaderboard.html';
+                }, 2000);
+            } else {
+                // On Netlify, allow natural form submission
+                // But redirect after a delay to ensure Netlify processes the data
+                setTimeout(() => {
+                    window.location.href = 'leaderboard.html';
+                }, 2000); // 2 second delay as per best practices
+                
+                // Don't prevent default - let the form submit to Netlify
+            }
         });
 
         // Initialize when page loads
