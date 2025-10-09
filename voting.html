@@ -115,7 +115,7 @@
 
         .form-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: var(--md);
             margin-bottom: var(--lg);
         }
@@ -264,6 +264,17 @@
             color: var(--text);
         }
 
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+                gap: var(--sm);
+            }
+            
+            .form-row .form-group:nth-child(3) {
+                grid-column: span 2;
+            }
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: var(--md);
@@ -312,8 +323,6 @@
                         <label for="last-name">Last Name:</label>
                         <input type="text" id="last-name" name="lastName" required>
                     </div>
-                </div>
-                <div class="form-row">
                     <div class="form-group">
                         <label for="email">Email Address:</label>
                         <input type="email" id="email" name="email" required>
