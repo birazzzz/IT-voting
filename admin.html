@@ -367,6 +367,12 @@
         </div>
 
         <div class="form-section">
+            <h2>🔧 Database Setup</h2>
+            <p>If you see "table not found" errors, click the button below to create the required tables in Supabase:</p>
+            <button class="btn btn-primary" onclick="createSupabaseTables()">Create Supabase Tables</button>
+        </div>
+
+        <div class="form-section">
             <h2>➕ Add New Candidate</h2>
 
             <form id="addCandidateForm">
@@ -431,12 +437,17 @@
                 
                 if (error) {
                     console.error('Error fetching candidates from Supabase:', error);
+                    // Check if it's a table not found error
+                    if (error.message && error.message.includes('candidates')) {
+                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    }
                     return defaultCandidates;
                 }
                 
                 return data || defaultCandidates;
             } catch (err) {
                 console.error('Error loading candidates from Supabase:', err);
+                showMessage('error', 'Failed to load candidates from Supabase. Check console for details.');
                 return defaultCandidates;
             }
         }
@@ -457,6 +468,10 @@
                 
                 if (deleteError) {
                     console.error('Error clearing candidates:', deleteError);
+                    // Check if it's a table not found error
+                    if (deleteError.message && deleteError.message.includes('candidates')) {
+                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    }
                     return false;
                 }
                 
@@ -468,6 +483,10 @@
                     
                     if (insertError) {
                         console.error('Error saving candidates:', insertError);
+                        // Check if it's a table not found error
+                        if (insertError.message && insertError.message.includes('candidates')) {
+                            showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                        }
                         return false;
                     }
                 }
@@ -475,6 +494,7 @@
                 return true;
             } catch (err) {
                 console.error('Error saving candidates to Supabase:', err);
+                showMessage('error', 'Error saving candidates to Supabase. Check console for details.');
                 return false;
             }
         }
@@ -495,6 +515,37 @@
         // Reset form
         function resetForm() {
             document.getElementById('addCandidateForm').reset();
+        }
+
+        // Show Supabase table creation instructions
+        function createSupabaseTables() {
+            const instructions = `
+To create the required tables in Supabase, please follow these steps:
+
+1. Go to your Supabase project dashboard
+2. Navigate to Table Editor
+3. Create a new table named "candidates" with these columns:
+   - id (int8, primary key, auto-increment)
+   - name (text)
+   - project (text)
+   - created_at (timestamptz, default: now())
+
+4. Create another table named "votes" with these columns:
+   - id (int8, primary key, auto-increment)
+   - voter_name (text)
+   - voter_email (text)
+   - candidate_id (int8)
+   - candidate_name (text)
+   - candidate_project (text)
+   - vote_timestamp (timestamptz, default: now())
+
+5. After creating the tables, refresh this page and try adding candidates.
+            `;
+            
+            alert(instructions);
+            
+            // Also show in the error message area
+            showMessage('error', 'Please create the required tables in Supabase. Click "Create Supabase Tables" button for instructions.');
         }
 
         // Add new candidate
@@ -538,7 +589,12 @@
                 
                 if (error) {
                     console.error('Error adding candidate:', error);
-                    showMessage('error', 'Error adding candidate: ' + error.message);
+                    // Check if it's a table not found error
+                    if (error.message && error.message.includes('candidates')) {
+                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    } else {
+                        showMessage('error', 'Error adding candidate: ' + error.message);
+                    }
                     return false;
                 }
                 
@@ -548,7 +604,7 @@
                 return true;
             } catch (err) {
                 console.error('Error adding candidate:', err);
-                showMessage('error', 'Error adding candidate');
+                showMessage('error', 'Error adding candidate. Check console for details.');
                 return false;
             }
         }
@@ -573,7 +629,12 @@
                 
                 if (error) {
                     console.error('Error removing candidate:', error);
-                    showMessage('error', 'Error removing candidate: ' + error.message);
+                    // Check if it's a table not found error
+                    if (error.message && error.message.includes('candidates')) {
+                        showMessage('error', 'Candidates table not found in Supabase. Please create the table first.');
+                    } else {
+                        showMessage('error', 'Error removing candidate: ' + error.message);
+                    }
                     return;
                 }
                 
@@ -581,7 +642,7 @@
                 await renderCandidates();
             } catch (err) {
                 console.error('Error removing candidate:', err);
-                showMessage('error', 'Error removing candidate');
+                showMessage('error', 'Error removing candidate. Check console for details.');
             }
         }
 

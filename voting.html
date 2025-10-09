@@ -391,6 +391,10 @@
                 
                 if (error) {
                     console.error('Error fetching candidates from Supabase:', error);
+                    // Check if it's a table not found error
+                    if (error.message && error.message.includes('candidates')) {
+                        console.error('Candidates table not found in Supabase. Please create the table first.');
+                    }
                     return defaultCandidates;
                 }
                 

@@ -606,6 +606,10 @@
                 
                 if (votesError) {
                     console.error('Error fetching votes from Supabase:', votesError);
+                    // Check if it's a table not found error
+                    if (votesError.message && votesError.message.includes('votes')) {
+                        console.error('Votes table not found in Supabase. Please create the table first.');
+                    }
                     allVotes = [];
                 } else {
                     allVotes = votesData || [];
@@ -619,6 +623,10 @@
                 
                 if (candidatesError) {
                     console.error('Error fetching candidates from Supabase:', candidatesError);
+                    // Check if it's a table not found error
+                    if (candidatesError.message && candidatesError.message.includes('candidates')) {
+                        console.error('Candidates table not found in Supabase. Please create the table first.');
+                    }
                     allCandidates = [];
                 } else {
                     allCandidates = candidatesData || [];
