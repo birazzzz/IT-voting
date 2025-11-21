@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +25,7 @@
             margin: 0 auto;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -90,7 +91,7 @@
             padding: 25px;
             border-radius: 15px;
             text-align: center;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
 
         .stat-card h3 {
@@ -198,7 +199,7 @@
         .data-section {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -419,6 +420,7 @@
         }
     </style>
 </head>
+
 <body>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0"></script>
     <div class="dashboard-container">
@@ -431,7 +433,7 @@
             <button class="nav-btn active" onclick="showSection('overview')">Overview</button>
             <button class="nav-btn" onclick="showSection('candidates')">Candidates</button>
             <button class="nav-btn" onclick="showSection('activity')">Activity Log</button>
-            <button class="nav-btn" onclick="exportData()">📊 Export Data</button>
+            <button class="nav-btn" onclick="exportData()">📊 Export Leaderboard</button>
             <a href="admin.html" class="nav-btn" style="background: #e74c3c;">🔧 Manage</a>
         </div>
 
@@ -476,11 +478,12 @@
                         </div>
                         <div class="filter-group">
                             <label for="search-voter">Search Voter:</label>
-                            <input type="text" id="search-voter" placeholder="Enter voter name or email" onkeyup="filterByVoter()">
+                            <input type="text" id="search-voter" placeholder="Enter voter name or email"
+                                onkeyup="filterByVoter()">
                         </div>
                         <div class="btn-group">
                             <button class="btn btn-primary" onclick="refreshData()">🔄 Refresh</button>
-                            <button class="btn btn-success" onclick="exportData()">📊 Export</button>
+                            <button class="btn btn-success" onclick="exportData()">📊 Export Leaderboard</button>
                         </div>
                     </div>
                 </div>
@@ -522,7 +525,8 @@
                         <!-- Voter Details Section (initially hidden) -->
                         <div id="voterDetailsSection" class="voter-details-section" style="display: none;">
                             <div class="voter-details-header">
-                                <div class="voter-details-title" id="voterDetailsTitle">Voters for: <span id="selectedCandidateName"></span></div>
+                                <div class="voter-details-title" id="voterDetailsTitle">Voters for: <span
+                                        id="selectedCandidateName"></span></div>
                                 <button class="close-voter-details" onclick="closeVoterDetails()">✕ Close</button>
                             </div>
                             <div class="table-container">
@@ -563,7 +567,7 @@
         // Initialize Supabase with your provided credentials
         const SUPABASE_URL = 'https://ssrxybgexgntfdvkusyw.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzcnh5YmdleGdudGZkdmt1c3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NzYwMDEsImV4cCI6MjA3NTU1MjAwMX0._4WQ4uUE9ALjtZPSG11nouFA3MBftPgeCOf1trhoFlk';
-        
+
         // Initialize Supabase client
         let supabase;
         try {
@@ -573,7 +577,7 @@
             console.error('Error initializing Supabase client:', error);
             supabase = null;
         }
-        
+
         // Dashboard data
         let allVotes = [];
         let allVoters = [];
@@ -581,10 +585,13 @@
         let filteredVotes = [];
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', async function () {
             await loadData();
             updateDashboard();
             populateCandidateFilter();
+            listenForVoteUpdates();
+            // Auto-refresh every 5 seconds for real-time updates
+            setInterval(refreshData, 5000);
         });
 
         // Load data from Supabase
@@ -596,31 +603,31 @@
                 allCandidates = [];
                 return;
             }
-            
+
             try {
                 // Load votes
                 const { data: votesData, error: votesError } = await supabase
                     .from('votes')
                     .select('*')
                     .order('vote_timestamp', { ascending: false });
-                
+
                 if (votesError) {
                     console.error('Error fetching votes from Supabase:', votesError);
                     // Check for table not found
-                    if (votesError.message && 
-                        votesError.message.includes('votes') && 
-                        (votesError.message.includes('not found') || 
-                         votesError.message.includes('does not exist') ||
-                         votesError.message.includes('relation') ||
-                         votesError.message.includes('undefined_table'))) {
+                    if (votesError.message &&
+                        votesError.message.includes('votes') &&
+                        (votesError.message.includes('not found') ||
+                            votesError.message.includes('does not exist') ||
+                            votesError.message.includes('relation') ||
+                            votesError.message.includes('undefined_table'))) {
                         console.error('Votes table not found in Supabase. Please create the table first.');
                     }
                     // Check for RLS/permission errors
-                    else if (votesError.message && 
-                             (votesError.message.includes('permission') || 
-                              votesError.message.includes('denied') ||
-                              votesError.message.includes('row-level security') ||
-                              votesError.message.includes('42501'))) {
+                    else if (votesError.message &&
+                        (votesError.message.includes('permission') ||
+                            votesError.message.includes('denied') ||
+                            votesError.message.includes('row-level security') ||
+                            votesError.message.includes('42501'))) {
                         console.error('Permission denied. Please check Row Level Security (RLS) policies in Supabase.');
                     }
                     else {
@@ -628,32 +635,41 @@
                     }
                     allVotes = [];
                 } else {
-                    allVotes = votesData || [];
+                    // Map Supabase data (snake_case) to internal format (camelCase)
+                    allVotes = (votesData || []).map(vote => ({
+                        id: vote.id,
+                        voterName: vote.voter_name,
+                        voterEmail: vote.voter_email,
+                        participantId: vote.candidate_id,
+                        participantName: vote.candidate_name,
+                        participantProject: vote.candidate_project,
+                        timestamp: vote.vote_timestamp
+                    }));
                 }
-                
+
                 // Load candidates
                 const { data: candidatesData, error: candidatesError } = await supabase
                     .from('candidates')
                     .select('*')
                     .order('name', { ascending: true });
-                
+
                 if (candidatesError) {
                     console.error('Error fetching candidates from Supabase:', candidatesError);
                     // Check for table not found
-                    if (candidatesError.message && 
-                        candidatesError.message.includes('candidates') && 
-                        (candidatesError.message.includes('not found') || 
-                         candidatesError.message.includes('does not exist') ||
-                         candidatesError.message.includes('relation') ||
-                         candidatesError.message.includes('undefined_table'))) {
+                    if (candidatesError.message &&
+                        candidatesError.message.includes('candidates') &&
+                        (candidatesError.message.includes('not found') ||
+                            candidatesError.message.includes('does not exist') ||
+                            candidatesError.message.includes('relation') ||
+                            candidatesError.message.includes('undefined_table'))) {
                         console.error('Candidates table not found in Supabase. Please create the table first.');
                     }
                     // Check for RLS/permission errors
-                    else if (candidatesError.message && 
-                             (candidatesError.message.includes('permission') || 
-                              candidatesError.message.includes('denied') ||
-                              candidatesError.message.includes('row-level security') ||
-                              candidatesError.message.includes('42501'))) {
+                    else if (candidatesError.message &&
+                        (candidatesError.message.includes('permission') ||
+                            candidatesError.message.includes('denied') ||
+                            candidatesError.message.includes('row-level security') ||
+                            candidatesError.message.includes('42501'))) {
                         console.error('Permission denied. Please check Row Level Security (RLS) policies in Supabase.');
                     }
                     else {
@@ -663,7 +679,7 @@
                 } else {
                     allCandidates = candidatesData || [];
                 }
-                
+
                 // For voters, we'll extract unique voters from votes
                 const voterMap = {};
                 allVotes.forEach(vote => {
@@ -677,9 +693,9 @@
                     }
                     voterMap[voterKey].voteCount++;
                 });
-                
+
                 allVoters = Object.values(voterMap);
-                
+
                 console.log('Loaded data from Supabase:', {
                     votes: allVotes.length,
                     voters: allVoters.length,
@@ -1029,58 +1045,102 @@
             updateDashboard();
         }
 
-        // Export data as CSV
+        // Export leaderboard data as CSV
         function exportData() {
-            if (filteredVotes.length === 0) {
-                alert('No data to export. Please apply filters or refresh the data.');
+            if (allCandidates.length === 0) {
+                alert('No candidates to export.');
                 return;
             }
 
+            // Calculate candidate statistics based on filtered votes
+            const candidateStats = {};
+            filteredVotes.forEach(vote => {
+                const candidateId = vote.participantId;
+                if (!candidateStats[candidateId]) {
+                    candidateStats[candidateId] = {
+                        votes: 0,
+                        it: 0,
+                        voters: new Set()
+                    };
+                }
+                candidateStats[candidateId].votes++;
+                candidateStats[candidateId].it++;
+                candidateStats[candidateId].voters.add(vote.voterEmail);
+            });
+
+            // Helper to escape CSV fields
+            const escapeCsv = (field) => {
+                if (field === null || field === undefined) return '';
+                const stringField = String(field);
+                // If field contains quotes, commas, or newlines, wrap in quotes and escape existing quotes
+                if (stringField.includes('"') || stringField.includes(',') || stringField.includes('\n') || stringField.includes('\r')) {
+                    return `"${stringField.replace(/"/g, '""')}"`;
+                }
+                return stringField;
+            };
+
             // Create CSV headers
             const headers = [
-                'Vote ID',
-                'Voter Name',
-                'Voter Email',
-                'Candidate ID',
+                'Rank',
                 'Candidate Name',
-                'Candidate Project',
-                'Vote Timestamp',
-                'IT Given'
+                'Project',
+                'Total Votes',
+                'IT Given',
+                'Unique Voters',
+                'Avg IT/Vote'
             ];
 
-            // Convert votes to CSV rows
-            const csvRows = filteredVotes.map(vote => [
-                vote.id || '',
-                `"${vote.voterName}"`,
-                `"${vote.voterEmail}"`,
-                vote.participantId || '',
-                `"${vote.participantName}"`,
-                `"${getCandidateProject(vote.participantId)}"`,
-                vote.timestamp || '',
-                '1'
-            ]);
+            // Prepare data rows
+            const rows = allCandidates
+                .map(candidate => {
+                    const stats = candidateStats[candidate.id] || { votes: 0, it: 0, voters: new Set() };
+                    return {
+                        name: candidate.name,
+                        project: candidate.project,
+                        votes: stats.votes,
+                        it: stats.it,
+                        uniqueVoters: stats.voters.size,
+                        avgIt: stats.votes > 0 ? (stats.it / stats.votes).toFixed(1) : '0.0'
+                    };
+                })
+                .sort((a, b) => b.votes - a.votes)
+                .map((data, index) => [
+                    escapeCsv(index + 1),
+                    escapeCsv(data.name),
+                    escapeCsv(data.project),
+                    escapeCsv(data.votes),
+                    escapeCsv(data.it),
+                    escapeCsv(data.uniqueVoters),
+                    escapeCsv(data.avgIt)
+                ]);
 
-            // Combine headers and rows
+            // Combine headers and rows with CRLF line endings
             const csvContent = [
-                headers.join(','),
-                ...csvRows.map(row => row.join(','))
-            ].join('\n');
+                headers.map(escapeCsv).join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\r\n');
 
             // Create and download CSV file
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
 
-            const timestamp = new Date().toISOString().split('T')[0];
-            const filterInfo = document.getElementById('candidate-filter').value !== 'all' ?
-                `-${document.querySelector('#candidate-filter option:checked').text}` : '';
+            // For IE/Edge
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
 
-            a.download = `voting-data-${timestamp}${filterInfo}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
+                const timestamp = new Date().toISOString().split('T')[0];
+                const filterInfo = document.getElementById('candidate-filter').value !== 'all' ?
+                    `-${document.querySelector('#candidate-filter option:checked').text}` : '';
 
-            alert(`Exported ${filteredVotes.length} votes to CSV file`);
+                a.download = `leaderboard-export-${timestamp}${filterInfo}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            alert(`Exported leaderboard data for ${allCandidates.length} candidates`);
         }
 
         // Helper function to get candidate project name
@@ -1088,6 +1148,33 @@
             const candidate = allCandidates.find(c => c.id.toString() === candidateId.toString());
             return candidate ? candidate.project : '';
         }
+
+        // Listen for Supabase real-time updates
+        function listenForVoteUpdates() {
+            // Listen for Supabase real-time updates (if Supabase is available)
+            if (supabase) {
+                try {
+                    const subscription = supabase
+                        .channel('votes-changes')
+                        .on(
+                            'postgres_changes',
+                            {
+                                event: 'INSERT',
+                                schema: 'public',
+                                table: 'votes',
+                            },
+                            (payload) => {
+                                console.log('New vote detected from Supabase:', payload);
+                                refreshData();
+                            }
+                        )
+                        .subscribe();
+                } catch (err) {
+                    console.error('Error setting up Supabase real-time subscription:', err);
+                }
+            }
+        }
     </script>
 </body>
+
 </html>

@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         :root {
             /* Design Guidelines Color Palette */
@@ -520,12 +521,40 @@
             }
 
             try {
-                const votes = [];
-                const voterName = `${firstName} ${lastName}`;
+                // First, check how many votes this user has already cast
+                const { data: existingVotes, error: fetchError } = await supabase
+                    .from('votes')
+                    .select('*')
+                    .eq('voter_email', email);
 
-                // Create vote records for each selected candidate
+                if (fetchError) {
+                    console.error('Error checking existing votes:', fetchError);
+                    alert('Error checking vote history. Please try again.');
+                    return false;
+                }
+
+                // Check 1: Has the user already voted 10 times?
+                if (existingVotes.length >= 10) {
+                    alert('You have reached the maximum limit of 10 votes. Thank you for your participation!');
+                    return false;
+                }
+
+                // Check 2: Is the user trying to vote for someone they've already voted for?
+                const voterName = `${firstName} ${lastName}`;
+                const votesToSubmit = [];
+                
                 for (const candidate of window.selectedCandidates) {
-                    votes.push({
+                    // Check if user has already voted for this candidate
+                    const alreadyVotedForCandidate = existingVotes.some(vote => 
+                        vote.candidate_id === candidate.id);
+                    
+                    if (alreadyVotedForCandidate) {
+                        alert(`You have already voted for ${candidate.name}. You cannot vote for the same person twice.`);
+                        return false;
+                    }
+                    
+                    // Add this vote to the list to submit
+                    votesToSubmit.push({
                         voter_name: voterName,
                         voter_email: email,
                         candidate_id: candidate.id,
@@ -535,10 +564,17 @@
                     });
                 }
 
+                // Check 3: Would submitting these votes exceed the 10-vote limit?
+                if (existingVotes.length + votesToSubmit.length > 10) {
+                    const remainingVotes = 10 - existingVotes.length;
+                    alert(`You can only cast ${remainingVotes} more vote(s). Please deselect some candidates.`);
+                    return false;
+                }
+
                 // Insert all votes
                 const { data, error } = await supabase
                     .from('votes')
-                    .insert(votes);
+                    .insert(votesToSubmit);
 
                 if (error) {
                     console.error('Error submitting votes to Supabase:', error);
@@ -555,7 +591,7 @@
                     return false;
                 }
 
-                console.log(`Successfully submitted ${votes.length} votes to Supabase`);
+                console.log(`Successfully submitted ${votesToSubmit.length} votes to Supabase`);
                 return true;
             } catch (error) {
                 console.error('Error submitting votes:', error);
